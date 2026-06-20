@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react';
-import { useStore } from './store/useStore';
+import { useEffect, useMemo, useState } from 'react';
+import { useStore, useHydrated } from './store/useStore';
 import { recommend } from './engine/recommend';
 import { nextCType, nextSlot3 } from './engine/rotation';
 import { todayISO } from './lib/clock';
+import { requestPersistentStorage } from './pwa/persist';
 import type { SessionId } from './log/types';
 import { Hero } from './ui/Hero';
 import { ConsistencyChips, StatTiles } from './ui/Stats';
@@ -11,14 +12,20 @@ import { VideoModal } from './ui/VideoModal';
 import { LogWorkoutSheet } from './ui/LogWorkoutSheet';
 import { LogMatchSheet } from './ui/LogMatchSheet';
 import { ProgramSheet } from './ui/JsonDropZone';
+import { InstallHint } from './ui/InstallHint';
 
 type View = 'home' | 'workout';
 
 export default function App() {
+  const hydrated = useHydrated();
   const program = useStore((s) => s.program);
   const log = useStore((s) => s.log);
   const addGym = useStore((s) => s.addGym);
   const addMatch = useStore((s) => s.addMatch);
+
+  useEffect(() => {
+    requestPersistentStorage();
+  }, []);
 
   const today = todayISO();
   const rec = useMemo(() => recommend(program, log, today), [program, log, today]);
@@ -40,6 +47,16 @@ export default function App() {
 
   const legAppend = activeSession === rec.nextSession ? rec.legAppend : undefined;
 
+  if (!hydrated) {
+    return (
+      <div className="grid min-h-full place-items-center text-slate-500">
+        <div className="text-xl font-bold tracking-tight">
+          My<span className="text-accent">Gym</span>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="safe-top mx-auto min-h-full max-w-md px-4 pb-10">
       <header className="flex items-center justify-between py-4">
@@ -53,6 +70,7 @@ export default function App() {
 
       {view === 'home' ? (
         <div className="space-y-4">
+          <InstallHint />
           <Hero program={program} rec={rec} onStart={start} />
           <ConsistencyChips log={log} today={today} />
           <StatTiles log={log} />

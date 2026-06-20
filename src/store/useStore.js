@@ -1,8 +1,10 @@
+import { useEffect, useState } from 'react';
 import { create } from 'zustand';
-import { persist } from 'zustand/middleware';
+import { persist, createJSONStorage } from 'zustand/middleware';
 import { parseProgram, safeParseProgram } from '../program/schema';
 import programData from '../data/program.json';
 import { newId, nowISO } from '../lib/clock';
+import { idbStorage } from './idbStorage';
 const defaultProgram = parseProgram(programData);
 export const useStore = create()(persist((set) => ({
     program: defaultProgram,
@@ -28,6 +30,18 @@ export const useStore = create()(persist((set) => ({
     deleteEntry: (id) => set((s) => ({ log: s.log.filter((x) => x.id !== id) })),
 }), {
     name: 'mygym',
+    storage: createJSONStorage(() => idbStorage),
     // Persist the log always; program only matters if customized (kept for simplicity).
     partialize: (s) => ({ program: s.program, log: s.log }),
 }));
+/** React hook: true once persisted state has been read back from IndexedDB. */
+export function useHydrated() {
+    const [hydrated, setHydrated] = useState(() => useStore.persist.hasHydrated());
+    useEffect(() => {
+        const unsub = useStore.persist.onFinishHydration(() => setHydrated(true));
+        if (useStore.persist.hasHydrated())
+            setHydrated(true);
+        return unsub;
+    }, []);
+    return hydrated;
+}
