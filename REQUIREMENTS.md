@@ -70,13 +70,27 @@ A lightweight, single-user web app to:
 
 ### Gym Workout Structure
 Every gym session follows a fixed structure:
-1. **Athletic Prep** (warm-up / activation)
+1. **Athletic Prep** (warm-up / activation) — **has its own T1/T2 tiers**; balance + step-downs can also be done before matches.
 2. **Main Work** (the A / B / C session)
-3. **Core Finisher** — a **shared block that always ends every session**, regardless of A/B/C.
+3. **Core Finisher** — a **shared block that always ends every session**. It is **T1 and is NEVER cut** (~7 min).
 
-So the workouts are: **A, B, C** (the main work) **+ Core Finisher** (the common ending appended to all of them).
+So the workouts are: **A, B, C** (the main work) **+ Core Finisher** (the common ending appended to all of them), each preceded by **Athletic Prep**.
 
 Each gym session = **2 gym slots per cycle** → **Session A + (B or C)**. A is done every cycle.
+
+### Session types differ in shape
+- **Session A** — Upper + Pull Balance (strength: exercises with sets × reps, rest, videos).
+- **Session B** — Lower + Power (strength: same shape as A).
+- **Session C** — **Conditioning, NOT weightlifting.** Spinner/rower intervals. It has a warm-up → main intervals → cooldown, and the **main interval alternates between two week-types each C session**:
+  - **RSA (spinner):** 15s hard / 45s easy × 8–10.
+  - **VO₂max (rower/spinner):** 4 min hard / 3 min easy × 4.
+  - The two types **alternate** and are never both done in the same week → the app may need to track *which C-type is next*.
+
+### Core Finisher detail
+- 3-slot template (~7 min), T1, never cut:
+  - **Slot 1 — Anti-rotation** (Pallof Press).
+  - **Slot 2 — Anti-extension** (Dead Bug *or* Front Plank).
+  - **Slot 3 — Lateral / adductor — ROTATES session to session** (Copenhagen Plank / Side Plank / Suitcase Carry). Some slot-3 options have **no video yet**.
 
 ---
 
@@ -84,17 +98,21 @@ Each gym session = **2 gym slots per cycle** → **Session A + (B or C)**. A is 
 
 - **Mobile-only** — always used on my cellphone. Design mobile-first; no need to optimize for desktop.
 - **Simple and clean** — fast to scan and tap.
+- **Single-page, no subpages.** Everything at a glance — recommendation, workout, stats all in one clean layout (modals/expanders are fine; separate routed pages are not).
+- **Offline-capable (PWA).** Must work at the gym with no/bad signal: install to home screen, cache the program + assets, and **queue logs locally**, syncing when back online. (I'll always load the site with signal beforehand.)
 
 ### Exercise list item
 Each exercise in the list shows:
-- **Name**
-- **Repetitions** (e.g., sets × reps)
-- **Resting time** (rest between sets)
-- **Image thumbnail**
-- **YouTube video link** — videos are always **YouTube Shorts**.
+- **Name** + **tier badge** (T1 / T2).
+- **Repetitions** — free-text, varied formats: `4 × 5–6`, `2 × 30s/leg`, `3 × 8/leg`, `15s hard / 45s easy × 8–10`.
+- **Resting time** (rest between sets) — may be absent for some items (e.g. conditioning).
+- **Image thumbnail** (optional).
+- **Coaching note / cue** — short tip per exercise (the trainer's `>` notes).
+- **YouTube video link** — *optional* (some items have no video yet). **Mostly Shorts, but a few are regular `watch?v=` links** → player must handle both.
+- **Supersets / multi-movement items** — some items group **two movements with two videos** (e.g. "Arms superset" = DB Curl + Triceps Pushdown; "Trunk primer" = Dead Bug + Pallof). A list item may contain **more than one movement/video**.
 
 ### Video behavior
-- Tapping the video opens it in a **modal** (in-app player).
+- Tapping a video opens it in a **modal** (in-app player) — supports both Shorts and `watch?v=` URLs.
 - Also provide an **"Open in YouTube"** option to open the video in the YouTube app/site instead of the modal.
 
 ---
@@ -103,48 +121,72 @@ Each exercise in the list shows:
 
 The training program changes from time to time. Rather than hard-coding exercises, the app reads the program from a **JSON file** that I can **upload/replace** to update everything.
 
-- **Source of truth = JSON.** Uploading a new JSON instantly updates the displayed program (exercises, reps, rest, images, videos, tiers).
+- **Source of truth = JSON.** Loading a new JSON instantly updates the displayed program (exercises, reps, rest, images, videos, tiers).
+- **Upload by drag & drop** — drop the JSON file onto a spot in the app to replace the program. Stored locally (works offline thereafter).
 - The JSON defines: workouts **A / B / C**, the shared **Core Finisher**, and the **Athletic Prep**, plus each exercise's details.
+- **Thumbnails are supplied by me** as image URLs in the JSON (not auto-derived).
+- **Video is optional** — if an item has no video, simply show no video (no placeholder/block).
 - **Activity logs (gym + matches) are NOT in this JSON** — logs are separate data that persists across program changes.
 
 ### Proposed JSON shape (draft — to refine)
 ```jsonc
 {
-  "version": "2026-06-20",          // identifies the program version
-  "athleticPrep": {                  // shared warm-up
-    "exercises": [ /* … */ ]
+  "version": "v6",                    // program version (e.g. matches trainning.md v6)
+  "athleticPrep": {
+    "title": "Athletic Prep",
+    "items": [ /* tiered items, same shape as workout items */ ]
   },
-  "coreFinisher": {                  // shared ending, appended to every session
-    "exercises": [ /* … */ ]
+  "coreFinisher": {
+    "title": "Core Finisher",
+    "tier": "T1",                     // never cut
+    "slots": [                         // 3-slot template; slot 3 rotates
+      { "slot": 1, "label": "Anti-rotation", "movements": [ /* … */ ] },
+      { "slot": 2, "label": "Anti-extension", "movements": [ /* … */ ] },
+      { "slot": 3, "label": "Lateral / adductor", "rotates": true, "movements": [ /* options */ ] }
+    ]
   },
   "workouts": {
     "A": {
-      "name": "Session A",
-      "exercises": [
+      "name": "Session A — Upper + Pull Balance",
+      "type": "strength",
+      "items": [
         {
-          "name": "Back Squat",
-          "tier": "T1",              // T1 or T2
-          "reps": "4×5",             // sets × reps (free text)
+          "tier": "T1",
+          "reps": "4 × 5–6",
           "rest": "2–3 min",
-          "thumbnail": "https://…/squat.jpg",
-          "video": "https://youtube.com/shorts/…",
-          "notes": "Ramp warm-up sets first. ~2–3 reps in reserve."
+          "thumbnail": "https://…/bench.jpg",
+          "note": "Shoulder blades back and down, control the descent.",
+          "movements": [               // usually 1; supersets have 2+
+            { "name": "Barbell Bench Press", "video": "https://youtube.com/shorts/_FkbD0FhgVE" }
+          ]
         }
       ]
     },
-    "B": { "name": "Session B", "exercises": [ /* … */ ] },
-    "C": { "name": "Session C", "exercises": [ /* … */ ] }
+    "B": { "name": "Session B — Lower + Power", "type": "strength", "items": [ /* … */ ] },
+    "C": {
+      "name": "Session C — Conditioning",
+      "type": "conditioning",
+      "alternates": [                  // app tracks which is next
+        { "key": "RSA",    "main": "15s hard / 45s easy × 8–10" },
+        { "key": "VO2max", "main": "4 min hard / 3 min easy × 4" }
+      ],
+      "items": [ /* warm-up, cooldown, etc. */ ]
+    }
   }
 }
 ```
 
-> Open: should Athletic Prep / Core Finisher exercises also have T1/T2 tiers, or are they always done in full?
+Key shape decisions baked in: **items contain `movements[]`** (handles supersets / multi-video), **prep & finisher are tiered**, **Session C is `type: conditioning` with alternating week-types**, video is **optional**.
 
 ---
 
 ## 8. Training Cycle Logic (which workout to do)
 
-The app should help decide **which session to do next** based on the cycle and football/futsal activity.
+**The app is a smart coach: it AUTOMATICALLY recommends the next session**, computed from the cycle + logged football/futsal activity + past gym sessions. The recommendation is the headline of the homepage; I can still override and pick manually.
+
+The app also **tracks rotation state automatically**:
+- Which **Session C interval-type** is next (RSA ↔ VO₂max alternation).
+- Which **Core Finisher slot-3** movement is next (Copenhagen → Side Plank → Suitcase rotation).
 
 ### Cycle basics
 - **7–10 day cycle.**
@@ -176,7 +218,10 @@ The app should help decide **which session to do next** based on the cycle and f
 2. Choose completion type:
    - **Complete** (T1 + T2), or
    - **T1 only**.
-3. Workout is logged (with date/time).
+3. Rate the session **1–3 stars** (same as football performance rating).
+4. Workout is logged (with date/time, type, completion, rating).
+
+> Logging is **whole-workout only** — no per-exercise checkboxes, no weight logging (keep it simple).
 
 ### 9.3 Log a football / futsal session
 1. Tap **"I played"** (or check the day).
@@ -229,20 +274,57 @@ _(Coaching rules from my trainer — for display/reference in-app, e.g., per-exe
 
 ---
 
-## 12. Open Questions
+## 12. Decisions Log
 
-- What exact statistics do you want on the homepage?
-- Should exercises track details (sets, reps, weight logged per session), or just a checklist?
-- Do you want to check off individual exercises during a session, or just mark the whole workout done at the end?
-- Should there be a full activity history / log view (gym + matches)?
-- What are the actual exercises in workouts A, B, C (and their T1/T2 tiers, prep, and core finisher)?
-- Any need to edit/manage exercises in-app, or are they fixed in config?
-- Offline support needed (e.g., gym with bad signal)?
-- How "smart" should the cycle suggestion be — just show rules/warnings, or actively recommend the next session?
-- Where should the loading guidelines live — a dedicated page, per-exercise notes, or both?
+| # | Decision |
+|---|----------|
+| 1 | **Smart coach.** App auto-recommends the next session from cycle + football/futsal logs. Manual override allowed. |
+| 2 | **Simple logging.** Whole-workout only (Complete vs T1-only) + **1–3 star rating**. No per-exercise checkboxes, no weights. |
+| 3 | **App tracks rotations** automatically (Session C type, Core slot-3). |
+| 4 | **Homepage stats only**, no history view — but **keep it extensible** to add more later. |
+| 5 | **Homepage stats — still to brainstorm** (see Section 13). |
+| 6 | **Drag & drop** JSON upload; stored locally. |
+| 7 | **Thumbnails supplied by me** (image URLs in JSON). |
+| 8 | **No video → show nothing** (no placeholder). |
+| 9 | **Offline-first PWA.** Works at gym with no signal; logs queue locally and sync later. |
+| 10 | **Single-page, clean, all at a glance.** No subpages; modals/expanders OK. |
 
 ---
 
-## 13. Additional Requirements
+## 13. Homepage Layout & Statistics
+
+Single screen, top to bottom. Designed to stay **extensible** (add tiles later without redesign).
+
+### 13.1 Hero card — "What do I do today?" (self-contained)
+The headline of the app. Shows the **auto-recommended next session** + the cycle state inline:
+
+```
+┌──────────────────────────┐
+│ NEXT: Session B          │
+│ Lower + Power  [START]   │
+│ ──────────────────────── │
+│ Cycle: A✓ · B/C ○        │
+│ C-type next: RSA         │
+│ Core slot-3: Copenhagen  │
+└──────────────────────────┘
+```
+- Recommended session (with reason, e.g. *"no futsal this week"*) + **Start** button.
+- **Cycle progress** (what's done this cycle, what's next).
+- **Rotation state**: next Session-C interval-type (RSA ↔ VO₂max), next Core slot-3 (Copenhagen → Side Plank → Suitcase).
+- **Rule warnings** surfaced here when active (e.g. ⚠️ *"2 futsal weeks, legs not loaded → C adds Squat 2×5 + RDL 2×8"*).
+- Manual override: I can still pick A/B/C myself.
+
+### 13.2 Consistency strip
+Compact chips: **sessions this week**, **streak (weeks)**, **sessions-per-week average**.
+
+### 13.3 Summary tiles (side by side, expandable zone)
+- **Gym tile** — total sessions, A/B/C counts, complete vs T1-only ratio, average session ⭐.
+- **Football tile** — matches played (football vs futsal), goals (total + per match), average ⭐.
+
+> All four stat groups confirmed as wanted: **consistency, football performance, gym breakdown, cycle status**. The tiles area is the natural place to add more later.
+
+---
+
+## 14. Additional Requirements
 
 _(Space for new requirements as you add them.)_
