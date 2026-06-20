@@ -71,8 +71,10 @@ A lightweight, single-user web app to:
 ### Gym Workout Structure
 Every gym session follows a fixed structure:
 1. **Athletic Prep** (warm-up / activation)
-2. **Main Work** (the A/B/C session)
-3. **Core Finisher**
+2. **Main Work** (the A / B / C session)
+3. **Core Finisher** — a **shared block that always ends every session**, regardless of A/B/C.
+
+So the workouts are: **A, B, C** (the main work) **+ Core Finisher** (the common ending appended to all of them).
 
 Each gym session = **2 gym slots per cycle** → **Session A + (B or C)**. A is done every cycle.
 
@@ -97,7 +99,50 @@ Each exercise in the list shows:
 
 ---
 
-## 7. Training Cycle Logic (which workout to do)
+## 7. Training Data (JSON-driven)
+
+The training program changes from time to time. Rather than hard-coding exercises, the app reads the program from a **JSON file** that I can **upload/replace** to update everything.
+
+- **Source of truth = JSON.** Uploading a new JSON instantly updates the displayed program (exercises, reps, rest, images, videos, tiers).
+- The JSON defines: workouts **A / B / C**, the shared **Core Finisher**, and the **Athletic Prep**, plus each exercise's details.
+- **Activity logs (gym + matches) are NOT in this JSON** — logs are separate data that persists across program changes.
+
+### Proposed JSON shape (draft — to refine)
+```jsonc
+{
+  "version": "2026-06-20",          // identifies the program version
+  "athleticPrep": {                  // shared warm-up
+    "exercises": [ /* … */ ]
+  },
+  "coreFinisher": {                  // shared ending, appended to every session
+    "exercises": [ /* … */ ]
+  },
+  "workouts": {
+    "A": {
+      "name": "Session A",
+      "exercises": [
+        {
+          "name": "Back Squat",
+          "tier": "T1",              // T1 or T2
+          "reps": "4×5",             // sets × reps (free text)
+          "rest": "2–3 min",
+          "thumbnail": "https://…/squat.jpg",
+          "video": "https://youtube.com/shorts/…",
+          "notes": "Ramp warm-up sets first. ~2–3 reps in reserve."
+        }
+      ]
+    },
+    "B": { "name": "Session B", "exercises": [ /* … */ ] },
+    "C": { "name": "Session C", "exercises": [ /* … */ ] }
+  }
+}
+```
+
+> Open: should Athletic Prep / Core Finisher exercises also have T1/T2 tiers, or are they always done in full?
+
+---
+
+## 8. Training Cycle Logic (which workout to do)
 
 The app should help decide **which session to do next** based on the cycle and football/futsal activity.
 
@@ -120,20 +165,20 @@ The app should help decide **which session to do next** based on the cycle and f
 
 ---
 
-## 8. User Flows
+## 9. User Flows
 
-### 8.1 Start a gym workout
+### 9.1 Start a gym workout
 1. From homepage, select workout **A**, **B**, or **C** (app may **suggest** which based on cycle logic).
 2. App shows the exercise list (T1 and T2 clearly separated/labeled).
 
-### 8.2 Finish a gym workout
+### 9.2 Finish a gym workout
 1. Tap **"I finished the training"**.
 2. Choose completion type:
    - **Complete** (T1 + T2), or
    - **T1 only**.
 3. Workout is logged (with date/time).
 
-### 8.3 Log a football / futsal session
+### 9.3 Log a football / futsal session
 1. Tap **"I played"** (or check the day).
 2. Select **Football** or **Futsal**.
 3. **Date** defaults to today; if it wasn't today, open a **calendar** to pick the day.
@@ -141,13 +186,13 @@ The app should help decide **which session to do next** based on the cycle and f
 5. Rate **performance (1–3 stars)**.
 6. Session is logged into the activity history.
 
-### 8.4 Homepage statistics
+### 9.4 Homepage statistics
 - Show progress / statistics.
 - _(Specific stats to be defined — see Open Questions.)_
 
 ---
 
-## 9. Statistics (to be detailed)
+## 10. Statistics (to be detailed)
 
 Possible metrics (TBD):
 
@@ -170,7 +215,7 @@ Possible metrics (TBD):
 
 ---
 
-## 10. Reference — Loading & Intensity Guidelines
+## 11. Reference — Loading & Intensity Guidelines
 
 _(Coaching rules from my trainer — for display/reference in-app, e.g., per-exercise notes or a guidelines page.)_
 
@@ -184,7 +229,7 @@ _(Coaching rules from my trainer — for display/reference in-app, e.g., per-exe
 
 ---
 
-## 11. Open Questions
+## 12. Open Questions
 
 - What exact statistics do you want on the homepage?
 - Should exercises track details (sets, reps, weight logged per session), or just a checklist?
@@ -198,6 +243,6 @@ _(Coaching rules from my trainer — for display/reference in-app, e.g., per-exe
 
 ---
 
-## 12. Additional Requirements
+## 13. Additional Requirements
 
 _(Space for new requirements as you add them.)_
