@@ -1,0 +1,235 @@
+{
+  "version": "v6",
+  "schedule": {
+    "football": [1],
+    "futsal": [4]
+  },
+  "athleticPrep": {
+    "title": "Athletic Prep",
+    "note": "Knee insurance. Do the balance + step-downs before matches/futsal too when you can.",
+    "items": [
+      {
+        "tier": "T1",
+        "reps": "2 × 30s/leg",
+        "movements": [
+          { "name": "Single-Leg Balance", "video": "https://www.youtube.com/watch?v=Dtgh2_LFkBQ" }
+        ]
+      },
+      {
+        "tier": "T1",
+        "reps": "2 × 6–8/leg",
+        "note": "Lower slow, knee tracks over toes.",
+        "movements": [
+          { "name": "Slow Step-Down (off a stair/box)", "video": "https://www.youtube.com/shorts/z87nPg4ac0o" }
+        ]
+      },
+      {
+        "tier": "T2",
+        "reps": "2–3 × 4",
+        "note": "Drop to a quarter-squat stance, freeze and stick. Braking, NOT a jump.",
+        "movements": [
+          { "name": "Snap-Down (low-amplitude landing)", "video": "https://www.youtube.com/shorts/WsoK9i_K5hU" }
+        ]
+      },
+      {
+        "tier": "T2",
+        "label": "Trunk primer",
+        "note": "Light, to switch the core on.",
+        "movements": [
+          { "name": "Dead Bug", "reps": "1 × 6/side", "video": "https://www.youtube.com/shorts/DqLL45uk2Tk" },
+          { "name": "Pallof Press", "reps": "1 × 8/side", "video": "https://www.youtube.com/shorts/5aZ0IhJS8O8" }
+        ]
+      }
+    ]
+  },
+  "coreFinisher": {
+    "title": "Core Finisher",
+    "tier": "T1",
+    "note": "Ends EVERY gym session · never cut (~7 min). Doctor's priority. Slot 3 rotates so adductor/lateral work shows up every cycle.",
+    "slots": [
+      {
+        "slot": 1,
+        "label": "Anti-rotation",
+        "reps": "2–3 × 10–12/side",
+        "rotates": false,
+        "options": [
+          { "name": "Pallof Press", "key": "pallof", "video": "https://www.youtube.com/shorts/5aZ0IhJS8O8" }
+        ]
+      },
+      {
+        "slot": 2,
+        "label": "Anti-extension",
+        "reps": "2–3 × 8–10/side or 30–45s",
+        "rotates": false,
+        "options": [
+          { "name": "Dead Bug", "key": "deadbug", "video": "https://www.youtube.com/shorts/DqLL45uk2Tk" },
+          { "name": "Front Plank", "key": "plank" }
+        ]
+      },
+      {
+        "slot": 3,
+        "label": "Lateral / adductor",
+        "rotates": true,
+        "note": "Copenhagen = the adductor piece (start short-lever, progress slowly). Rotate slot 3 session to session.",
+        "options": [
+          { "name": "Copenhagen Plank", "key": "copenhagen" },
+          { "name": "Side Plank", "key": "side" },
+          { "name": "Suitcase Carry", "key": "suitcase" }
+        ]
+      }
+    ]
+  },
+  "workouts": {
+    "A": {
+      "name": "Session A — Upper + Pull Balance",
+      "type": "strength",
+      "note": "Low leg demand → safe close to matches. Every cycle.",
+      "items": [
+        {
+          "tier": "T1",
+          "reps": "4 × 5–6",
+          "rest": "2–3 min",
+          "intensity": "leave 2–3 in reserve",
+          "note": "Shoulder blades back and down, feet planted, control the descent. Your strength lift.",
+          "movements": [
+            { "name": "Barbell Bench Press", "video": "https://www.youtube.com/shorts/_FkbD0FhgVE" }
+          ]
+        },
+        {
+          "tier": "T2",
+          "reps": "3 × 8–10",
+          "rest": "90s",
+          "note": "Full stretch at top, drive elbows down.",
+          "movements": [
+            { "name": "Pull-up / Lat Pulldown", "video": "https://www.youtube.com/shorts/bNmvKpJSWKM" }
+          ]
+        },
+        {
+          "tier": "T1",
+          "reps": "3 × 10–12",
+          "rest": "90s",
+          "note": "Chest tall, squeeze, no shrugging. The pull that stays — it balances your bench.",
+          "movements": [
+            { "name": "Seated Row", "video": "https://www.youtube.com/shorts/qD1WZ5pSuvk" }
+          ]
+        },
+        {
+          "tier": "T2",
+          "reps": "3 × 8–10",
+          "rest": "90s",
+          "note": "Back supported, dumbbells start at ear height, elbows ~45° (not flared). Press up and slightly in; control down. Don't arch the back / flare the ribs — brace abs and glutes.",
+          "movements": [
+            { "name": "Seated DB Overhead Press", "video": "https://www.youtube.com/shorts/k6tzKisR3NY" }
+          ]
+        },
+        {
+          "tier": "T2",
+          "label": "Arms superset",
+          "reps": "2–3 rounds",
+          "rest": "60s",
+          "intensity": "last set near failure OK",
+          "note": "Your \"definition\" slot. Cut this first when short on time.",
+          "movements": [
+            { "name": "DB Curl", "reps": "10–12", "video": "https://www.youtube.com/shorts/MKWBV29S6c0" },
+            { "name": "Cable Triceps Pushdown", "reps": "10–12", "video": "https://www.youtube.com/shorts/1FjkhpZsaxc" }
+          ]
+        }
+      ]
+    },
+    "B": {
+      "name": "Session B — Lower + Power",
+      "type": "strength",
+      "note": "Non-futsal weeks only, away from matches.",
+      "items": [
+        {
+          "tier": "T1",
+          "reps": "4 × 5–6",
+          "rest": "2–3 min",
+          "intensity": "never to failure",
+          "note": "Brace, knees track over toes, control to a depth you own. If the knee complains: front/box squat or leg press before quitting squats.",
+          "movements": [
+            { "name": "Back Squat", "video": "https://www.youtube.com/shorts/dW3zj79xfrc" }
+          ]
+        },
+        {
+          "tier": "T1",
+          "reps": "3 × 8",
+          "rest": "2 min",
+          "intensity": "leave 2–3 in reserve",
+          "note": "Hips back, soft knees, neutral spine. Posterior chain + hamstrings.",
+          "movements": [
+            { "name": "Romanian Deadlift", "video": "https://www.youtube.com/shorts/Wou9zVQrAfs" }
+          ]
+        },
+        {
+          "tier": "T1",
+          "reps": "3 × 8/leg",
+          "rest": "90s",
+          "intensity": "1–2 in reserve",
+          "note": "Step wide, sit into the working hip, other leg straight. Frontal-plane / adductor / anti-valgus work — T1 over the leg curl.",
+          "movements": [
+            { "name": "Lateral Lunge", "video": "https://www.youtube.com/shorts/4UbxJQe4im8" }
+          ]
+        },
+        {
+          "tier": "T2",
+          "reps": "3 × 12 explosive",
+          "rest": "90s",
+          "note": "Hip snap, not a squat. Skippable on short days — matches give you plenty of explosive hip extension.",
+          "movements": [
+            { "name": "Kettlebell Swing", "video": "https://www.youtube.com/shorts/TIy6s4O2bOY" }
+          ]
+        },
+        {
+          "tier": "T2",
+          "reps": "3 × 10–12",
+          "rest": "75s",
+          "intensity": "last set near failure OK",
+          "note": "Direct hamstrings. T2 only because the RDL covers them on a short day — stays in the full session.",
+          "movements": [
+            { "name": "Leg Curl", "video": "https://www.youtube.com/shorts/_lgE0gPvbik" }
+          ]
+        },
+        {
+          "tier": "T2",
+          "reps": "3 × 12–15",
+          "rest": "60s",
+          "intensity": "last set near failure OK",
+          "note": "Achilles + push-off + deceleration. First to drop with the swing when crunched.",
+          "movements": [
+            { "name": "Standing Calf Raise", "video": "https://www.youtube.com/shorts/wdOkFomQNp8" }
+          ]
+        }
+      ]
+    },
+    "C": {
+      "name": "Session C — Conditioning",
+      "type": "conditioning",
+      "note": "Spinner/rower — knee-friendly. Alternate the two types; NEVER both in one week.",
+      "warmup": {
+        "tier": "T1",
+        "reps": "5–8 min easy",
+        "note": "Build gradually.",
+        "movements": [{ "name": "Warm-up" }]
+      },
+      "alternates": [
+        {
+          "key": "RSA",
+          "label": "RSA (spinner)",
+          "main": "15s hard / 45s easy × 8–10",
+          "note": "Optional 2nd round = T2."
+        },
+        {
+          "key": "VO2max",
+          "label": "VO₂max (rower/spinner)",
+          "main": "4 min hard / 3 min easy × 4"
+        }
+      ],
+      "cooldown": {
+        "tier": "T2",
+        "reps": "5 min easy + mobility",
+        "movements": [{ "name": "Cooldown" }]
+      }
+    }
+  }
+}
