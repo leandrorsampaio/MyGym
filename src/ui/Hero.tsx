@@ -1,6 +1,8 @@
+import { useState } from 'react';
 import type { Program } from '../program/schema';
 import type { SessionId } from '../log/types';
 import type { Recommendation } from '../engine/recommend';
+import { ConfirmDialog } from './ConfirmDialog';
 
 const SESSION_LABELS: Record<SessionId, string> = { A: 'A', B: 'B', C: 'C' };
 
@@ -18,6 +20,7 @@ export function Hero({
   rec: Recommendation;
   onStart: (s: SessionId) => void;
 }) {
+  const [confirmSession, setConfirmSession] = useState<SessionId | null>(null);
   const next = program.workouts[rec.nextSession];
   return (
     <section className="rounded-2xl border border-line bg-surface p-5">
@@ -70,7 +73,7 @@ export function Hero({
           {(['A', 'B', 'C'] as SessionId[]).map((s) => (
             <button
               key={s}
-              onClick={() => onStart(s)}
+              onClick={() => setConfirmSession(s)}
               className={`rounded-xl border py-2 font-medium ${
                 s === rec.nextSession ? 'border-accent text-accent' : 'border-line text-slate-300'
               }`}
@@ -80,6 +83,24 @@ export function Hero({
           ))}
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirmSession !== null}
+        title={confirmSession ? `Start Session ${confirmSession}?` : ''}
+        message={
+          confirmSession
+            ? `${program.workouts[confirmSession].name.replace(/^Session [ABC] — /, '')}${
+                confirmSession !== rec.nextSession ? ' — this overrides the recommended session.' : ''
+              }`
+            : undefined
+        }
+        confirmLabel="Start"
+        onConfirm={() => {
+          if (confirmSession) onStart(confirmSession);
+          setConfirmSession(null);
+        }}
+        onCancel={() => setConfirmSession(null)}
+      />
     </section>
   );
 }

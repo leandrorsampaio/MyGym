@@ -5,12 +5,15 @@ import { nextCType, nextSlot3 } from './engine/rotation';
 import { todayISO } from './lib/clock';
 import { requestPersistentStorage } from './pwa/persist';
 import { initSync, syncNow } from './sync/sync';
-import type { SessionId } from './log/types';
+import type { LogEntry, SessionId } from './log/types';
+import { isGym } from './log/types';
 import { Hero } from './ui/Hero';
 import { ConsistencyChips, StatTiles } from './ui/Stats';
 import { LastActivity } from './ui/LastActivity';
 import { Heatmap } from './ui/Heatmap';
 import { Highlights } from './ui/Highlights';
+import { SessionBreakdown } from './ui/SessionBreakdown';
+import { HistoryView } from './ui/HistoryView';
 import { WorkoutView } from './ui/WorkoutView';
 import { VideoModal } from './ui/VideoModal';
 import { LogWorkoutSheet } from './ui/LogWorkoutSheet';
@@ -18,7 +21,7 @@ import { LogMatchSheet } from './ui/LogMatchSheet';
 import { ProgramSheet } from './ui/JsonDropZone';
 import { InstallHint } from './ui/InstallHint';
 
-type View = 'home' | 'workout';
+type View = 'home' | 'workout' | 'history';
 
 export default function App() {
   const hydrated = useHydrated();
@@ -26,6 +29,8 @@ export default function App() {
   const log = useStore((s) => s.log);
   const addGym = useStore((s) => s.addGym);
   const addMatch = useStore((s) => s.addMatch);
+  const deleteEntry = useStore((s) => s.deleteEntry);
+  const updateEntry = useStore((s) => s.updateEntry);
   const pending = usePendingCount();
 
   useEffect(() => {
@@ -48,6 +53,7 @@ export default function App() {
   const [finishOpen, setFinishOpen] = useState(false);
   const [matchOpen, setMatchOpen] = useState(false);
   const [programOpen, setProgramOpen] = useState(false);
+  const [editing, setEditing] = useState<LogEntry | null>(null);
 
   const start = (s: SessionId) => {
     setActiveSession(s);
@@ -93,18 +99,38 @@ export default function App() {
         <div className="space-y-4">
           <InstallHint />
           <Hero program={program} rec={rec} onStart={start} />
-          <LastActivity log={log} today={today} />
-          <ConsistencyChips log={log} today={today} />
-          <Heatmap log={log} today={today} />
-          <Highlights log={log} />
-          <StatTiles log={log} />
           <button
             onClick={() => setMatchOpen(true)}
             className="w-full rounded-xl border border-line bg-surface py-3 font-medium text-slate-200"
           >
             ⚽ I played — log a match
           </button>
+          <LastActivity log={log} today={today} />
+          <ConsistencyChips log={log} today={today} />
+          <Heatmap log={log} today={today} />
+          <SessionBreakdown log={log} />
+          <Highlights log={log} />
+          <StatTiles log={log} />
+          <button
+            onClick={() => {
+              setView('history');
+              window.scrollTo(0, 0);
+            }}
+            className="w-full rounded-xl border border-line bg-surface py-3 font-medium text-slate-200"
+          >
+            📋 View all activity ({log.length})
+          </button>
         </div>
+      ) : view === 'history' ? (
+        <HistoryView
+          log={log}
+          onBack={() => setView('home')}
+          onEdit={(entry) => setEditing(entry)}
+          onDelete={(id) => {
+            deleteEntry(id);
+            void syncNow();
+          }}
+        />
       ) : (
         <WorkoutView
           program={program}
@@ -145,6 +171,41 @@ export default function App() {
         }}
       />
       <ProgramSheet open={programOpen} onClose={() => setProgramOpen(false)} />
+
+      {/* Edit an existing log entry (remounts per entry via key so fields pre-fill). */}
+      {editing && isGym(editing) && (
+        <LogWorkoutSheet
+          key={editing.id}
+          open
+          program={program}
+          session={editing.session}
+          defaultSlot3={editing.slot3 ?? slot3Next}
+          initial={editing}
+          title={`Edit Session ${editing.session}`}
+          submitLabel="Save changes"
+          onClose={() => setEditing(null)}
+          onSubmit={(e) => {
+            updateEntry({ ...editing, ...e });
+            void syncNow();
+            setEditing(null);
+          }}
+        />
+      )}
+      {editing && !isGym(editing) && (
+        <LogMatchSheet
+          key={editing.id}
+          open
+          initial={editing}
+          title="Edit match"
+          submitLabel="Save changes"
+          onClose={() => setEditing(null)}
+          onSubmit={(e) => {
+            updateEntry({ ...editing, ...e });
+            void syncNow();
+            setEditing(null);
+          }}
+        />
+      )}
     </div>
   );
 }

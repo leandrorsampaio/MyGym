@@ -5,6 +5,8 @@ import { Sheet } from './Sheet';
 import { StarRating } from './StarRating';
 import { todayISO } from '../lib/clock';
 
+type GymFields = Omit<GymEntry, 'id' | 'kind' | 'updatedAt'>;
+
 export function LogWorkoutSheet({
   open,
   program,
@@ -12,6 +14,9 @@ export function LogWorkoutSheet({
   defaultCType,
   defaultSlot3,
   defaultLegAppend,
+  initial,
+  title,
+  submitLabel = 'Log workout',
   onClose,
   onSubmit,
 }: {
@@ -21,17 +26,20 @@ export function LogWorkoutSheet({
   defaultCType?: string;
   defaultSlot3: string;
   defaultLegAppend?: boolean;
+  /** Pre-fill for edit mode. */
+  initial?: Partial<GymFields>;
+  title?: string;
+  submitLabel?: string;
   onClose: () => void;
-  onSubmit: (e: Omit<GymEntry, 'id' | 'kind' | 'updatedAt'>) => void;
+  onSubmit: (e: GymFields) => void;
 }) {
-  const [date, setDate] = useState(todayISO());
-  const [completion, setCompletion] = useState<Completion>('complete');
-  const [rating, setRating] = useState<Rating>(2);
-  const [cType, setCType] = useState(defaultCType ?? program.workouts.C.alternates[0]?.key);
-  const [slot3, setSlot3] = useState(defaultSlot3);
-  const [legAppend, setLegAppend] = useState(!!defaultLegAppend);
-
-  const slot3Options = program.coreFinisher.slots.find((s) => s.rotates)?.options ?? [];
+  const [date, setDate] = useState(initial?.date ?? todayISO());
+  const [completion, setCompletion] = useState<Completion>(initial?.completion ?? 'complete');
+  const [rating, setRating] = useState<Rating>(initial?.rating ?? 2);
+  const [cType, setCType] = useState(initial?.cType ?? defaultCType ?? program.workouts.C.alternates[0]?.key);
+  // Auto-recorded from the recommendation so the rotation advances; not asked in the UI.
+  const [slot3] = useState(initial?.slot3 ?? defaultSlot3);
+  const [legAppend, setLegAppend] = useState(initial?.legAppend ?? !!defaultLegAppend);
 
   const submit = () => {
     onSubmit({
@@ -46,7 +54,7 @@ export function LogWorkoutSheet({
   };
 
   return (
-    <Sheet open={open} onClose={onClose} title={`Finish Session ${session}`}>
+    <Sheet open={open} onClose={onClose} title={title ?? `Finish Session ${session}`}>
       <div className="space-y-4">
         <Field label="Date">
           <input
@@ -91,20 +99,6 @@ export function LogWorkoutSheet({
           </Field>
         )}
 
-        <Field label="Core slot-3 done">
-          <select
-            value={slot3}
-            onChange={(e) => setSlot3(e.target.value)}
-            className="w-full rounded-lg border border-line bg-surface2 px-3 py-2"
-          >
-            {slot3Options.map((o) => (
-              <option key={o.key} value={o.key}>
-                {o.name}
-              </option>
-            ))}
-          </select>
-        </Field>
-
         {session === 'C' && (
           <label className="flex items-center gap-2 text-sm text-slate-300">
             <input type="checkbox" checked={legAppend} onChange={(e) => setLegAppend(e.target.checked)} />
@@ -117,7 +111,7 @@ export function LogWorkoutSheet({
         </Field>
 
         <button onClick={submit} className="w-full rounded-xl bg-accent py-3 font-semibold text-bg active:bg-accentDim">
-          Log workout
+          {submitLabel}
         </button>
       </div>
     </Sheet>

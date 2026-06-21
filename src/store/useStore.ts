@@ -22,6 +22,8 @@ interface State {
   resetProgram: () => void;
   addGym: (e: Omit<GymEntry, 'id' | 'kind' | 'updatedAt'>) => void;
   addMatch: (e: Omit<MatchEntry, 'id' | 'kind' | 'updatedAt'>) => void;
+  /** Replace an existing entry by id (bumps updatedAt, marks dirty). */
+  updateEntry: (entry: LogEntry) => void;
   deleteEntry: (id: string) => void;
   /** Merge entries pulled from the cloud (last-write-wins). */
   applyRemote: (entries: LogEntry[]) => void;
@@ -59,6 +61,14 @@ export const useStore = create<State>()(
         set((s) => {
           const entry: LogEntry = { ...e, id: newId(), kind: 'match', updatedAt: nowISO() };
           return { log: [...s.log, entry], dirty: [...s.dirty, entry.id] };
+        }),
+      updateEntry: (entry) =>
+        set((s) => {
+          const updated = { ...entry, updatedAt: nowISO() };
+          return {
+            log: s.log.map((x) => (x.id === entry.id ? updated : x)),
+            dirty: s.dirty.includes(entry.id) ? s.dirty : [...s.dirty, entry.id],
+          };
         }),
       deleteEntry: (id) =>
         set((s) => ({

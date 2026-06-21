@@ -28,6 +28,10 @@ export interface HeatDay {
   date: string;
   gym: number;
   match: number;
+  /** Best rating among that day's gym sessions (0 if none) — drives colour intensity. */
+  gymRating: number;
+  /** Best rating among that day's matches (0 if none). */
+  matchRating: number;
   future: boolean;
 }
 
@@ -35,9 +39,16 @@ export interface HeatDay {
 export function buildHeatmap(log: LogEntry[], today: string, weeks = 12): HeatDay[][] {
   const gymByDate = new Map<string, number>();
   const matchByDate = new Map<string, number>();
+  const gymRating = new Map<string, number>();
+  const matchRating = new Map<string, number>();
   for (const e of log) {
-    const map = isGym(e) ? gymByDate : matchByDate;
-    map.set(e.date, (map.get(e.date) ?? 0) + 1);
+    if (isGym(e)) {
+      gymByDate.set(e.date, (gymByDate.get(e.date) ?? 0) + 1);
+      gymRating.set(e.date, Math.max(gymRating.get(e.date) ?? 0, e.rating));
+    } else if (isMatch(e)) {
+      matchByDate.set(e.date, (matchByDate.get(e.date) ?? 0) + 1);
+      matchRating.set(e.date, Math.max(matchRating.get(e.date) ?? 0, e.rating));
+    }
   }
 
   const start = addDays(mondayOf(today), -7 * (weeks - 1));
@@ -50,6 +61,8 @@ export function buildHeatmap(log: LogEntry[], today: string, weeks = 12): HeatDa
         date,
         gym: gymByDate.get(date) ?? 0,
         match: matchByDate.get(date) ?? 0,
+        gymRating: gymRating.get(date) ?? 0,
+        matchRating: matchRating.get(date) ?? 0,
         future: date > today,
       });
     }

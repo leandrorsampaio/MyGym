@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { Sheet } from './Sheet';
+import { ConfirmDialog } from './ConfirmDialog';
 import { useStore } from '../store/useStore';
 import { generateSeedLog } from '../dev/seed';
 import { todayISO } from '../lib/clock';
@@ -14,6 +15,7 @@ export function ProgramSheet({ open, onClose }: { open: boolean; onClose: () => 
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
+  const [confirm, setConfirm] = useState<'load' | 'clear' | null>(null);
 
   const handleFile = async (file: File) => {
     setError(null);
@@ -77,21 +79,13 @@ export function ProgramSheet({ open, onClose }: { open: boolean; onClose: () => 
           </div>
           <div className="grid grid-cols-2 gap-2">
             <button
-              onClick={() => {
-                replaceLog(generateSeedLog(todayISO()));
-                setOk('Loaded ~6 months of demo activity.');
-                setError(null);
-              }}
+              onClick={() => setConfirm('load')}
               className="rounded-xl border border-line py-2 text-sm text-slate-200"
             >
               Load demo data
             </button>
             <button
-              onClick={() => {
-                replaceLog([]);
-                setOk('Cleared all activity.');
-                setError(null);
-              }}
+              onClick={() => setConfirm('clear')}
               className="rounded-xl border border-line py-2 text-sm text-red-300"
             >
               Clear activity
@@ -99,6 +93,39 @@ export function ProgramSheet({ open, onClose }: { open: boolean; onClose: () => 
           </div>
         </div>
       </div>
+
+      <ConfirmDialog
+        open={confirm === 'load'}
+        title="Load demo data?"
+        message={`This replaces your current ${logCount} activity ${
+          logCount === 1 ? 'entry' : 'entries'
+        } with ~1 year of generated demo data.`}
+        confirmLabel="Load demo"
+        onConfirm={() => {
+          replaceLog(generateSeedLog(todayISO()));
+          setOk('Loaded ~1 year of demo activity.');
+          setError(null);
+          setConfirm(null);
+        }}
+        onCancel={() => setConfirm(null)}
+      />
+
+      <ConfirmDialog
+        open={confirm === 'clear'}
+        title="Clear all activity?"
+        message={`This permanently deletes all ${logCount} logged ${
+          logCount === 1 ? 'entry' : 'entries'
+        }. This can't be undone.`}
+        confirmLabel="Clear all"
+        danger
+        onConfirm={() => {
+          replaceLog([]);
+          setOk('Cleared all activity.');
+          setError(null);
+          setConfirm(null);
+        }}
+        onCancel={() => setConfirm(null)}
+      />
     </Sheet>
   );
 }

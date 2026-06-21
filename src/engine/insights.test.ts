@@ -22,7 +22,11 @@ describe('lastActivity', () => {
 
 describe('buildHeatmap', () => {
   // Wednesday, so Thu–Sun of the current week are still in the future.
-  const grid = buildHeatmap([gym('2026-06-15', 'A'), match('2026-06-15', 'football')], '2026-06-17', 12);
+  const grid = buildHeatmap(
+    [gym('2026-06-15', 'A', { rating: 3 }), match('2026-06-15', 'football', { rating: 2 })],
+    '2026-06-17',
+    12,
+  );
 
   it('has weeks × 7 days, ending in the current week', () => {
     expect(grid).toHaveLength(12);
@@ -30,10 +34,12 @@ describe('buildHeatmap', () => {
     expect(grid.at(-1)![0]!.date).toBe('2026-06-15'); // Monday of the current week
   });
 
-  it('marks gym and match counts on the right day', () => {
+  it('marks gym and match counts and ratings on the right day', () => {
     const cell = grid.flat().find((d) => d.date === '2026-06-15')!;
     expect(cell.gym).toBe(1);
     expect(cell.match).toBe(1);
+    expect(cell.gymRating).toBe(3);
+    expect(cell.matchRating).toBe(2);
   });
 
   it('flags future days in the current week', () => {

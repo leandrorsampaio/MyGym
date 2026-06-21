@@ -4,19 +4,27 @@ import { Sheet } from './Sheet';
 import { StarRating } from './StarRating';
 import { todayISO } from '../lib/clock';
 
+type MatchFields = Omit<MatchEntry, 'id' | 'kind' | 'updatedAt'>;
+
 export function LogMatchSheet({
   open,
+  initial,
+  title = 'Log a match',
+  submitLabel = 'Log match',
   onClose,
   onSubmit,
 }: {
   open: boolean;
+  initial?: Partial<MatchFields>;
+  title?: string;
+  submitLabel?: string;
   onClose: () => void;
-  onSubmit: (e: Omit<MatchEntry, 'id' | 'kind' | 'updatedAt'>) => void;
+  onSubmit: (e: MatchFields) => void;
 }) {
-  const [sport, setSport] = useState<Sport>('football');
-  const [date, setDate] = useState(todayISO());
-  const [goals, setGoals] = useState(0);
-  const [rating, setRating] = useState<Rating>(2);
+  const [sport, setSport] = useState<Sport>(initial?.sport ?? 'football');
+  const [date, setDate] = useState(initial?.date ?? todayISO());
+  const [goals, setGoals] = useState(initial?.goals ?? 0);
+  const [rating, setRating] = useState<Rating>(initial?.rating ?? 2);
 
   const submit = () => {
     onSubmit({ date, sport, goals, rating });
@@ -24,7 +32,7 @@ export function LogMatchSheet({
   };
 
   return (
-    <Sheet open={open} onClose={onClose} title="Log a match">
+    <Sheet open={open} onClose={onClose} title={title}>
       <div className="space-y-4">
         <div className="grid grid-cols-2 gap-2">
           {(['football', 'futsal'] as Sport[]).map((s) => (
@@ -75,7 +83,7 @@ export function LogMatchSheet({
         </div>
 
         <button onClick={submit} className="w-full rounded-xl bg-accent py-3 font-semibold text-bg active:bg-accentDim">
-          Log match
+          {submitLabel}
         </button>
       </div>
     </Sheet>

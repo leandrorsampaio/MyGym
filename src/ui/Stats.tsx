@@ -44,7 +44,7 @@ export function StatTiles({ log }: { log: LogEntry[] }) {
   const g = gymStats(log);
   const f = footballStats(log);
   return (
-    <div className="flex gap-3">
+    <div className="space-y-3">
       <Tile title="Gym">
         <Row k="Sessions" v={g.total} />
         <Row k="A / B / C" v={`${g.bySession.A} / ${g.bySession.B} / ${g.bySession.C}`} />

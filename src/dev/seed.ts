@@ -19,7 +19,7 @@ function mulberry32(a: number) {
 const SLOT3 = ['copenhagen', 'side', 'suitcase'];
 const CTYPE = ['RSA', 'VO2max'];
 
-export function generateSeedLog(today: string, weeks = 26): LogEntry[] {
+export function generateSeedLog(today: string, weeks = 52): LogEntry[] {
   const rng = mulberry32(0xc0ffee);
   const chance = (p: number) => rng() < p;
   const randint = (min: number, max: number) => min + Math.floor(rng() * (max - min + 1));
