@@ -5,10 +5,13 @@ import { parseProgram, safeParseProgram } from '../program/schema';
 import programData from '../data/program.json';
 import { newId, nowISO } from '../lib/clock';
 import { idbStorage } from './idbStorage';
+import { mergeRemote } from '../sync/merge';
 const defaultProgram = parseProgram(programData);
 export const useStore = create()(persist((set) => ({
     program: defaultProgram,
     log: [],
+    dirty: [],
+    tombstones: [],
     loadProgram: (input) => {
         const res = safeParseProgram(input);
         if (!res.success) {
@@ -21,19 +24,39 @@ export const useStore = create()(persist((set) => ({
         return null;
     },
     resetProgram: () => set({ program: defaultProgram }),
-    addGym: (e) => set((s) => ({
-        log: [...s.log, { ...e, id: newId(), kind: 'gym', updatedAt: nowISO() }],
+    addGym: (e) => set((s) => {
+        const entry = { ...e, id: newId(), kind: 'gym', updatedAt: nowISO() };
+        return { log: [...s.log, entry], dirty: [...s.dirty, entry.id] };
+    }),
+    addMatch: (e) => set((s) => {
+        const entry = { ...e, id: newId(), kind: 'match', updatedAt: nowISO() };
+        return { log: [...s.log, entry], dirty: [...s.dirty, entry.id] };
+    }),
+    deleteEntry: (id) => set((s) => ({
+        log: s.log.filter((x) => x.id !== id),
+        dirty: s.dirty.filter((d) => d !== id),
+        tombstones: [...s.tombstones.filter((t) => t.id !== id), { id, updatedAt: nowISO() }],
     })),
-    addMatch: (e) => set((s) => ({
-        log: [...s.log, { ...e, id: newId(), kind: 'match', updatedAt: nowISO() }],
+    applyRemote: (entries) => set((s) => ({ log: mergeRemote(s.log, entries, s.tombstones) })),
+    clearSynced: (upsertIds, deleteIds) => set((s) => ({
+        dirty: s.dirty.filter((d) => !upsertIds.includes(d)),
+        tombstones: s.tombstones.filter((t) => !deleteIds.includes(t.id)),
     })),
-    deleteEntry: (id) => set((s) => ({ log: s.log.filter((x) => x.id !== id) })),
 }), {
     name: 'mygym',
     storage: createJSONStorage(() => idbStorage),
-    // Persist the log always; program only matters if customized (kept for simplicity).
-    partialize: (s) => ({ program: s.program, log: s.log }),
+    // Persist program, log, and the outbox so pending syncs survive a reload.
+    partialize: (s) => ({
+        program: s.program,
+        log: s.log,
+        dirty: s.dirty,
+        tombstones: s.tombstones,
+    }),
 }));
+/** Count of local changes not yet backed up to the cloud. */
+export function usePendingCount() {
+    return useStore((s) => s.dirty.length + s.tombstones.length);
+}
 /** React hook: true once persisted state has been read back from IndexedDB. */
 export function useHydrated() {
     const [hydrated, setHydrated] = useState(() => useStore.persist.hasHydrated());

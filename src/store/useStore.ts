@@ -6,18 +6,29 @@ import type { GymEntry, LogEntry, MatchEntry } from '../log/types';
 import programData from '../data/program.json';
 import { newId, nowISO } from '../lib/clock';
 import { idbStorage } from './idbStorage';
+import { mergeRemote, type Tombstone } from '../sync/merge';
 
 const defaultProgram = parseProgram(programData);
 
 interface State {
   program: Program;
   log: LogEntry[];
+  /** Outbox: ids of entries changed locally and not yet pushed to the cloud. */
+  dirty: string[];
+  /** Outbox: soft-deletes not yet pushed. */
+  tombstones: Tombstone[];
   /** Replace the program from a dropped JSON value. Returns an error string on failure. */
   loadProgram: (input: unknown) => string | null;
   resetProgram: () => void;
   addGym: (e: Omit<GymEntry, 'id' | 'kind' | 'updatedAt'>) => void;
   addMatch: (e: Omit<MatchEntry, 'id' | 'kind' | 'updatedAt'>) => void;
   deleteEntry: (id: string) => void;
+  /** Merge entries pulled from the cloud (last-write-wins). */
+  applyRemote: (entries: LogEntry[]) => void;
+  /** Clear outbox items confirmed pushed. */
+  clearSynced: (upsertIds: string[], deleteIds: string[]) => void;
+  /** Replace the whole log (demo data / clear). Resets the outbox. */
+  replaceLog: (entries: LogEntry[]) => void;
 }
 
 export const useStore = create<State>()(
@@ -25,6 +36,8 @@ export const useStore = create<State>()(
     (set) => ({
       program: defaultProgram,
       log: [],
+      dirty: [],
+      tombstones: [],
       loadProgram: (input) => {
         const res = safeParseProgram(input);
         if (!res.success) {
@@ -38,23 +51,47 @@ export const useStore = create<State>()(
       },
       resetProgram: () => set({ program: defaultProgram }),
       addGym: (e) =>
-        set((s) => ({
-          log: [...s.log, { ...e, id: newId(), kind: 'gym', updatedAt: nowISO() }],
-        })),
+        set((s) => {
+          const entry: LogEntry = { ...e, id: newId(), kind: 'gym', updatedAt: nowISO() };
+          return { log: [...s.log, entry], dirty: [...s.dirty, entry.id] };
+        }),
       addMatch: (e) =>
+        set((s) => {
+          const entry: LogEntry = { ...e, id: newId(), kind: 'match', updatedAt: nowISO() };
+          return { log: [...s.log, entry], dirty: [...s.dirty, entry.id] };
+        }),
+      deleteEntry: (id) =>
         set((s) => ({
-          log: [...s.log, { ...e, id: newId(), kind: 'match', updatedAt: nowISO() }],
+          log: s.log.filter((x) => x.id !== id),
+          dirty: s.dirty.filter((d) => d !== id),
+          tombstones: [...s.tombstones.filter((t) => t.id !== id), { id, updatedAt: nowISO() }],
         })),
-      deleteEntry: (id) => set((s) => ({ log: s.log.filter((x) => x.id !== id) })),
+      applyRemote: (entries) =>
+        set((s) => ({ log: mergeRemote(s.log, entries, s.tombstones) })),
+      clearSynced: (upsertIds, deleteIds) =>
+        set((s) => ({
+          dirty: s.dirty.filter((d) => !upsertIds.includes(d)),
+          tombstones: s.tombstones.filter((t) => !deleteIds.includes(t.id)),
+        })),
     }),
     {
       name: 'mygym',
       storage: createJSONStorage(() => idbStorage),
-      // Persist the log always; program only matters if customized (kept for simplicity).
-      partialize: (s) => ({ program: s.program, log: s.log }),
+      // Persist program, log, and the outbox so pending syncs survive a reload.
+      partialize: (s) => ({
+        program: s.program,
+        log: s.log,
+        dirty: s.dirty,
+        tombstones: s.tombstones,
+      }),
     },
   ),
 );
+
+/** Count of local changes not yet backed up to the cloud. */
+export function usePendingCount(): number {
+  return useStore((s) => s.dirty.length + s.tombstones.length);
+}
 
 /** React hook: true once persisted state has been read back from IndexedDB. */
 export function useHydrated(): boolean {

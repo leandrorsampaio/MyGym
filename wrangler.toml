@@ -1,0 +1,17 @@
+# Cloudflare Pages + Functions + D1 configuration.
+# The D1 `database_id` is filled in after you create the database (see DEPLOY.md).
+name = "mygym"
+pages_build_output_dir = "dist"
+compatibility_date = "2024-09-23"
+
+[[d1_databases]]
+binding = "DB"                 # available in Functions as env.DB
+database_name = "mygym"
+database_id = "REPLACE_AFTER_CREATE"
+
+# Non-secret vars. ALLOWED_EMAIL gates the API to your account.
+# ACCESS_TEAM_DOMAIN / ACCESS_AUD enable JWT verification (set once Access is configured).
+[vars]
+ALLOWED_EMAIL = ""
+ACCESS_TEAM_DOMAIN = ""        # e.g. "lsampaio.cloudflareaccess.com"
+ACCESS_AUD = ""               # the Access application AUD tag
