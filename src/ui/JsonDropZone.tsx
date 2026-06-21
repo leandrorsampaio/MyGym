@@ -1,12 +1,16 @@
 import { useState } from 'react';
 import { Sheet } from './Sheet';
 import { useStore } from '../store/useStore';
+import { generateSeedLog } from '../dev/seed';
+import { todayISO } from '../lib/clock';
 
 /** Drag & drop (or tap to pick) a program JSON file to replace the current program. */
 export function ProgramSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const program = useStore((s) => s.program);
   const loadProgram = useStore((s) => s.loadProgram);
   const resetProgram = useStore((s) => s.resetProgram);
+  const replaceLog = useStore((s) => s.replaceLog);
+  const logCount = useStore((s) => s.log.length);
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
@@ -66,6 +70,34 @@ export function ProgramSheet({ open, onClose }: { open: boolean; onClose: () => 
         <button onClick={resetProgram} className="w-full rounded-xl border border-line py-2 text-sm text-slate-300">
           Reset to built-in program
         </button>
+
+        <div className="border-t border-line pt-3">
+          <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Activity data ({logCount} entries)
+          </div>
+          <div className="grid grid-cols-2 gap-2">
+            <button
+              onClick={() => {
+                replaceLog(generateSeedLog(todayISO()));
+                setOk('Loaded ~6 months of demo activity.');
+                setError(null);
+              }}
+              className="rounded-xl border border-line py-2 text-sm text-slate-200"
+            >
+              Load demo data
+            </button>
+            <button
+              onClick={() => {
+                replaceLog([]);
+                setOk('Cleared all activity.');
+                setError(null);
+              }}
+              className="rounded-xl border border-line py-2 text-sm text-red-300"
+            >
+              Clear activity
+            </button>
+          </div>
+        </div>
       </div>
     </Sheet>
   );

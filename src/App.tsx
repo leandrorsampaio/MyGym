@@ -8,6 +8,9 @@ import { initSync, syncNow } from './sync/sync';
 import type { SessionId } from './log/types';
 import { Hero } from './ui/Hero';
 import { ConsistencyChips, StatTiles } from './ui/Stats';
+import { LastActivity } from './ui/LastActivity';
+import { Heatmap } from './ui/Heatmap';
+import { Highlights } from './ui/Highlights';
 import { WorkoutView } from './ui/WorkoutView';
 import { VideoModal } from './ui/VideoModal';
 import { LogWorkoutSheet } from './ui/LogWorkoutSheet';
@@ -90,7 +93,10 @@ export default function App() {
         <div className="space-y-4">
           <InstallHint />
           <Hero program={program} rec={rec} onStart={start} />
+          <LastActivity log={log} today={today} />
           <ConsistencyChips log={log} today={today} />
+          <Heatmap log={log} today={today} />
+          <Highlights log={log} />
           <StatTiles log={log} />
           <button
             onClick={() => setMatchOpen(true)}

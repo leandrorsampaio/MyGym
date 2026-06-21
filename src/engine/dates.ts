@@ -51,3 +51,13 @@ export function addDays(iso: string, days: number): string {
   d.setUTCDate(d.getUTCDate() + days);
   return d.toISOString().slice(0, 10);
 }
+
+/** The Monday (ISO week start) of the week containing `iso`. */
+export function mondayOf(iso: string): string {
+  return addDays(iso, -(isoWeekday(iso) - 1));
+}
+
+/** Contiguous integer that increments by 1 each ISO week (1970-01-05 is a Monday). */
+export function weekIndex(iso: string): number {
+  return daysBetween('1970-01-05', mondayOf(iso)) / 7;
+}

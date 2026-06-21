@@ -73,6 +73,7 @@ export const useStore = create<State>()(
           dirty: s.dirty.filter((d) => !upsertIds.includes(d)),
           tombstones: s.tombstones.filter((t) => !deleteIds.includes(t.id)),
         })),
+      replaceLog: (entries) => set({ log: entries, dirty: [], tombstones: [] }),
     }),
     {
       name: 'mygym',

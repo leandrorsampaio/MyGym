@@ -1,7 +1,0 @@
-import { jsx as _jsx, jsxs as _jsxs } from "react/jsx-runtime";
-import { embedUrl } from '../lib/youtube';
-/** In-app YouTube player (Shorts or watch links) with an "Open in YouTube" escape hatch. */
-export function VideoModal({ url, title, onClose, }) {
-    const embed = embedUrl(url);
-    return (_jsx("div", { className: "fixed inset-0 z-[60] flex flex-col items-center justify-center bg-black/85 p-4", onClick: onClose, children: _jsxs("div", { className: "w-full max-w-sm", onClick: (e) => e.stopPropagation(), children: [_jsxs("div", { className: "mb-2 flex items-center justify-between gap-2", children: [_jsx("span", { className: "truncate text-sm text-slate-200", children: title }), _jsx("button", { onClick: onClose, "aria-label": "Close", className: "px-2 text-slate-400", children: "\u2715" })] }), _jsx("div", { className: "relative w-full overflow-hidden rounded-xl bg-black", style: { aspectRatio: '9 / 16' }, children: embed ? (_jsx("iframe", { src: embed, title: title, className: "absolute inset-0 h-full w-full", allow: "accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture", allowFullScreen: true })) : (_jsx("div", { className: "absolute inset-0 grid place-items-center text-slate-400", children: "Can't embed this video" })) }), _jsx("a", { href: url, target: "_blank", rel: "noreferrer", className: "mt-3 block rounded-xl bg-surface2 py-3 text-center font-medium text-accent", children: "Open in YouTube \u2197" })] }) }));
-}
