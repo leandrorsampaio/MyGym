@@ -1,19 +1,14 @@
 import { useState } from 'react';
 import { Sheet } from './Sheet';
-import { ConfirmDialog } from './ConfirmDialog';
 import { useStore } from '../store/useStore';
 
 /** Drag & drop (or tap to pick) a program JSON file to replace the current program. */
 export function ProgramSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const program = useStore((s) => s.program);
   const loadProgram = useStore((s) => s.loadProgram);
-  const resetProgram = useStore((s) => s.resetProgram);
-  const replaceLog = useStore((s) => s.replaceLog);
-  const logCount = useStore((s) => s.log.length);
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
-  const [confirmClear, setConfirmClear] = useState(false);
 
   const handleFile = async (file: File) => {
     setError(null);
@@ -84,41 +79,7 @@ export function ProgramSheet({ open, onClose }: { open: boolean; onClose: () => 
           <pre className="whitespace-pre-wrap rounded-lg bg-red-500/10 p-3 text-xs text-red-300">{error}</pre>
         )}
         {ok && <div className="rounded-lg bg-accent/10 p-3 text-sm text-accent">{ok}</div>}
-
-        <button onClick={resetProgram} className="w-full rounded-xl border border-line py-2 text-sm text-slate-300">
-          Reset to built-in program
-        </button>
-
-        <div className="border-t border-line pt-3">
-          <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Activity data ({logCount} entries)
-          </div>
-          <button
-            onClick={() => setConfirmClear(true)}
-            disabled={logCount === 0}
-            className="w-full rounded-xl border border-line py-2 text-sm text-red-300 disabled:opacity-40"
-          >
-            Clear all activity
-          </button>
-        </div>
       </div>
-
-      <ConfirmDialog
-        open={confirmClear}
-        title="Clear all activity?"
-        message={`This permanently deletes all ${logCount} logged ${
-          logCount === 1 ? 'entry' : 'entries'
-        }. This can't be undone.`}
-        confirmLabel="Clear all"
-        danger
-        onConfirm={() => {
-          replaceLog([]);
-          setOk('Cleared all activity.');
-          setError(null);
-          setConfirmClear(false);
-        }}
-        onCancel={() => setConfirmClear(false)}
-      />
     </Sheet>
   );
 }
