@@ -12,6 +12,8 @@ const defaultProgram = parseProgram(programData);
 
 interface State {
   program: Program;
+  /** 'builtin' = follow the bundled program.json; 'custom' = a JSON the user uploaded. */
+  programSource: 'builtin' | 'custom';
   log: LogEntry[];
   /** Outbox: ids of entries changed locally and not yet pushed to the cloud. */
   dirty: string[];
@@ -37,6 +39,7 @@ export const useStore = create<State>()(
   persist(
     (set) => ({
       program: defaultProgram,
+      programSource: 'builtin',
       log: [],
       dirty: [],
       tombstones: [],
@@ -48,10 +51,10 @@ export const useStore = create<State>()(
             .map((i) => `${i.path.join('.') || 'root'}: ${i.message}`)
             .join('\n');
         }
-        set({ program: res.data });
+        set({ program: res.data, programSource: 'custom' });
         return null;
       },
-      resetProgram: () => set({ program: defaultProgram }),
+      resetProgram: () => set({ program: defaultProgram, programSource: 'builtin' }),
       addGym: (e) =>
         set((s) => {
           const entry: LogEntry = { ...e, id: newId(), kind: 'gym', updatedAt: nowISO() };
@@ -91,10 +94,23 @@ export const useStore = create<State>()(
       // Persist program, log, and the outbox so pending syncs survive a reload.
       partialize: (s) => ({
         program: s.program,
+        programSource: s.programSource,
         log: s.log,
         dirty: s.dirty,
         tombstones: s.tombstones,
       }),
+      // Keep the persisted log/outbox, but for a built-in program always follow the
+      // latest bundled program.json (only a user-uploaded 'custom' program persists).
+      merge: (persisted, current) => {
+        const p = (persisted ?? {}) as Partial<State>;
+        const isCustom = p.programSource === 'custom';
+        return {
+          ...current,
+          ...p,
+          program: isCustom && p.program ? p.program : current.program,
+          programSource: isCustom ? 'custom' : 'builtin',
+        };
+      },
     },
   ),
 );

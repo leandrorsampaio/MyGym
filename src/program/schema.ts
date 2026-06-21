@@ -14,6 +14,8 @@ export const Movement = z.object({
   name: z.string().min(1),
   /** Optional — some items (e.g. rotating core options) have no clip yet. */
   video: z.string().url().optional(),
+  /** Thumbnail image — a URL or an app-relative path (e.g. "/thumbs/squat.jpg"). */
+  thumbnail: z.string().optional(),
   /** Per-movement reps, used when movements in one item differ (supersets). */
   reps: z.string().optional(),
   /** Stable key for rotation/logging (e.g. 'copenhagen'). Defaults derivable from name. */
@@ -33,7 +35,8 @@ export const Item = z.object({
   intensity: z.string().optional(),
   /** Coaching cue. */
   note: z.string().optional(),
-  thumbnail: z.string().url().optional(),
+  /** Item-level fallback thumbnail (movements may override per-exercise). */
+  thumbnail: z.string().optional(),
   movements: z.array(Movement).min(1),
 });
 export type Item = z.infer<typeof Item>;

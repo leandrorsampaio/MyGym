@@ -34,8 +34,26 @@ export function ProgramSheet({ open, onClose }: { open: boolean; onClose: () => 
   return (
     <Sheet open={open} onClose={onClose} title="Training program">
       <div className="space-y-3">
-        <div className="text-sm text-slate-400">
-          Current version: <span className="text-slate-100">{program.version}</span>
+        <div className="flex items-center justify-between">
+          <div className="text-sm text-slate-400">
+            Current version: <span className="text-slate-100">{program.version}</span>
+          </div>
+          <button
+            onClick={() => {
+              const blob = new Blob([JSON.stringify(program, null, 2)], { type: 'application/json' });
+              const url = URL.createObjectURL(blob);
+              const a = document.createElement('a');
+              a.href = url;
+              a.download = `mygym-program-${program.version}.json`;
+              document.body.appendChild(a);
+              a.click();
+              a.remove();
+              URL.revokeObjectURL(url);
+            }}
+            className="rounded-lg border border-line px-3 py-1.5 text-sm text-accent"
+          >
+            ↓ Download JSON
+          </button>
         </div>
 
         <label

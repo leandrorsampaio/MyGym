@@ -1,5 +1,7 @@
 import type { Item, Movement } from '../program/schema';
 
+const PLACEHOLDER = '/exercise-placeholder.svg';
+
 function TierBadge({ tier }: { tier: 'T1' | 'T2' }) {
   return (
     <span
@@ -9,6 +11,22 @@ function TierBadge({ tier }: { tier: 'T1' | 'T2' }) {
     >
       {tier}
     </span>
+  );
+}
+
+function Thumb({ src, size }: { src?: string; size: number }) {
+  return (
+    <img
+      src={src || PLACEHOLDER}
+      alt=""
+      width={size}
+      height={size}
+      onError={(e) => {
+        if (e.currentTarget.src !== window.location.origin + PLACEHOLDER) e.currentTarget.src = PLACEHOLDER;
+      }}
+      className="shrink-0 rounded-lg bg-surface2 object-cover"
+      style={{ width: size, height: size }}
+    />
   );
 }
 
@@ -32,39 +50,50 @@ export function ExerciseItem({
   onPlay: (url: string, title: string) => void;
 }) {
   const multi = item.movements.length > 1;
-  const heading = item.label ?? item.movements[0]?.name ?? '';
+  const first = item.movements[0]!;
+  const heading = item.label ?? first.name;
 
   return (
     <div className="rounded-xl border border-line bg-surface p-3">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex items-center gap-2">
-          <TierBadge tier={item.tier} />
-          <span className="font-medium text-slate-100">{heading}</span>
-        </div>
-        <div className="text-right text-sm text-slate-300">
-          {item.reps && <div>{item.reps}</div>}
-          {item.rest && <div className="text-xs text-slate-500">rest {item.rest}</div>}
+      <div className="flex gap-3">
+        {/* Single-movement items show one thumbnail for the row. */}
+        {!multi && <Thumb src={first.thumbnail ?? item.thumbnail} size={56} />}
+
+        <div className="min-w-0 flex-1">
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center gap-2">
+              <TierBadge tier={item.tier} />
+              <span className="font-medium text-slate-100">{heading}</span>
+            </div>
+            <div className="text-right text-sm text-slate-300">
+              {item.reps && <div>{item.reps}</div>}
+              {item.rest && <div className="text-xs text-slate-500">rest {item.rest}</div>}
+            </div>
+          </div>
+
+          {item.intensity && <div className="mt-1 text-xs text-amber-300/80">{item.intensity}</div>}
+
+          {!multi && (
+            <div className="mt-2 flex justify-end">
+              <PlayButton m={first} onPlay={onPlay} />
+            </div>
+          )}
         </div>
       </div>
 
-      {item.intensity && <div className="mt-1 text-xs text-amber-300/80">{item.intensity}</div>}
-
-      {/* Single movement → inline play; superset → list each movement. */}
-      {multi ? (
+      {/* Supersets / multi-movement: a thumbnail per movement. */}
+      {multi && (
         <div className="mt-2 space-y-1">
           {item.movements.map((m, i) => (
-            <div key={i} className="flex items-center justify-between rounded-lg bg-surface2/50 px-2 py-1.5">
-              <span className="text-sm text-slate-200">
+            <div key={i} className="flex items-center gap-2 rounded-lg bg-surface2/50 px-2 py-1.5">
+              <Thumb src={m.thumbnail ?? item.thumbnail} size={40} />
+              <span className="min-w-0 flex-1 truncate text-sm text-slate-200">
                 {m.name}
                 {m.reps && <span className="text-slate-500"> · {m.reps}</span>}
               </span>
               <PlayButton m={m} onPlay={onPlay} />
             </div>
           ))}
-        </div>
-      ) : (
-        <div className="mt-2 flex justify-end">
-          <PlayButton m={item.movements[0]!} onPlay={onPlay} />
         </div>
       )}
 
