@@ -1,6 +1,5 @@
 import type { Item, Movement } from '../program/schema';
-
-const PLACEHOLDER = '/exercise-placeholder.svg';
+import { Thumb } from './Thumb';
 
 function TierBadge({ tier }: { tier: 'T1' | 'T2' }) {
   return (
@@ -11,22 +10,6 @@ function TierBadge({ tier }: { tier: 'T1' | 'T2' }) {
     >
       {tier}
     </span>
-  );
-}
-
-function Thumb({ src, size }: { src?: string; size: number }) {
-  return (
-    <img
-      src={src || PLACEHOLDER}
-      alt=""
-      width={size}
-      height={size}
-      onError={(e) => {
-        if (e.currentTarget.src !== window.location.origin + PLACEHOLDER) e.currentTarget.src = PLACEHOLDER;
-      }}
-      className="shrink-0 rounded-lg bg-surface2 object-cover"
-      style={{ width: size, height: size }}
-    />
   );
 }
 

@@ -18,8 +18,8 @@
         "movements": [
           {
             "name": "Single-Leg Balance",
-            "video": "https://www.youtube.com/watch?v=Dtgh2_LFkBQ",
-            "thumbnail": "/exercise-placeholder.svg"
+            "video": "https://www.youtube.com/shorts/TCVJJ96rYPc",
+            "thumbnail": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Single-Leg_Hop_Progression/0.jpg"
           }
         ]
       },
@@ -31,7 +31,7 @@
           {
             "name": "Slow Step-Down (off a stair/box)",
             "video": "https://www.youtube.com/shorts/z87nPg4ac0o",
-            "thumbnail": "/exercise-placeholder.svg"
+            "thumbnail": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Step-up_with_Knee_Raise/0.jpg"
           }
         ]
       },
@@ -43,7 +43,7 @@
           {
             "name": "Snap-Down (low-amplitude landing)",
             "video": "https://www.youtube.com/shorts/WsoK9i_K5hU",
-            "thumbnail": "/exercise-placeholder.svg"
+            "thumbnail": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Depth_Jump_Leap/0.jpg"
           }
         ]
       },
@@ -102,7 +102,8 @@
           {
             "name": "Front Plank",
             "key": "plank",
-            "thumbnail": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Plank/0.jpg"
+            "thumbnail": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Plank/0.jpg",
+            "video": "https://www.youtube.com/shorts/xe2MXatLTUw"
           }
         ]
       },
@@ -115,17 +116,20 @@
           {
             "name": "Copenhagen Plank",
             "key": "copenhagen",
-            "thumbnail": "/exercise-placeholder.svg"
+            "thumbnail": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Side_Bridge/0.jpg",
+            "video": "https://www.youtube.com/shorts/SPcgUTrxaKg"
           },
           {
             "name": "Side Plank",
             "key": "side",
-            "thumbnail": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Side_Bridge/0.jpg"
+            "thumbnail": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Side_Bridge/0.jpg",
+            "video": "https://www.youtube.com/shorts/BtM0a9x1F5o"
           },
           {
             "name": "Suitcase Carry",
             "key": "suitcase",
-            "thumbnail": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Farmers_Walk/0.jpg"
+            "thumbnail": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Farmers_Walk/0.jpg",
+            "video": "https://www.youtube.com/shorts/w76_JnzMfXM"
           }
         ]
       }
@@ -257,7 +261,7 @@
             {
               "name": "Lateral Lunge",
               "video": "https://www.youtube.com/shorts/4UbxJQe4im8",
-              "thumbnail": "/exercise-placeholder.svg"
+              "thumbnail": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Lateral_Bound/0.jpg"
             }
           ]
         },
@@ -315,7 +319,7 @@
         "movements": [
           {
             "name": "Warm-up",
-            "thumbnail": "/exercise-placeholder.svg"
+            "thumbnail": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Bicycling_Stationary/0.jpg"
           }
         ]
       },
@@ -338,7 +342,7 @@
         "movements": [
           {
             "name": "Cooldown",
-            "thumbnail": "/exercise-placeholder.svg"
+            "thumbnail": "https://cdn.jsdelivr.net/gh/yuhonas/free-exercise-db@main/exercises/Cat_Stretch/0.jpg"
           }
         ]
       }

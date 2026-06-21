@@ -2,6 +2,7 @@ import { useState } from 'react';
 import type { Program } from '../program/schema';
 import type { SessionId } from '../log/types';
 import { ExerciseItem } from './ExerciseItem';
+import { Thumb } from './Thumb';
 
 function SectionTitle({ children, hint }: { children: React.ReactNode; hint?: string }) {
   return (
@@ -105,33 +106,47 @@ export function WorkoutView({
       {/* Core Finisher */}
       <SectionTitle hint="T1 · never cut">{program.coreFinisher.title}</SectionTitle>
       <div className="space-y-2">
-        {program.coreFinisher.slots.map((slot) => {
-          const current = slot.rotates ? slot.options.find((o) => o.key === slot3Next) : null;
-          return (
-            <div key={slot.slot} className="rounded-xl border border-line bg-surface p-3">
-              <div className="flex items-center justify-between">
-                <span className="font-medium text-slate-100">
-                  {slot.slot}. {slot.label}
-                </span>
-                {slot.reps && <span className="text-sm text-slate-300">{slot.reps}</span>}
-              </div>
-              <div className="mt-1 text-sm text-slate-300">
-                {slot.rotates ? (
-                  <>
-                    <span className="font-medium text-accent">{current?.name ?? slot3Next}</span>
-                    <span className="text-slate-500">
-                      {' '}
-                      (today) · {slot.options.filter((o) => o.key !== slot3Next).map((o) => o.name).join(' / ')}
-                    </span>
-                  </>
-                ) : (
-                  slot.options.map((o) => o.name).join(' or ')
-                )}
-              </div>
-              {slot.note && <div className="mt-1 text-xs text-slate-500">{slot.note}</div>}
+        {program.coreFinisher.slots.map((slot) => (
+          <div key={slot.slot} className="rounded-xl border border-line bg-surface p-3">
+            <div className="flex items-center justify-between">
+              <span className="font-medium text-slate-100">
+                {slot.slot}. {slot.label}
+              </span>
+              {slot.reps && <span className="text-sm text-slate-300">{slot.reps}</span>}
             </div>
-          );
-        })}
+
+            <div className="mt-2 space-y-1">
+              {slot.options.map((o, i) => {
+                const isToday = slot.rotates && o.key === slot3Next;
+                const dim = slot.rotates && !isToday;
+                return (
+                  <div
+                    key={i}
+                    className={`flex items-center gap-2 rounded-lg px-2 py-1.5 ${
+                      isToday ? 'bg-surface2 ring-1 ring-accent' : 'bg-surface2/40'
+                    } ${dim ? 'opacity-50' : ''}`}
+                  >
+                    <Thumb src={o.thumbnail} size={40} />
+                    <span className="min-w-0 flex-1 truncate text-sm text-slate-200">{o.name}</span>
+                    {isToday && <span className="text-[10px] font-semibold text-accent">TODAY</span>}
+                    {o.video ? (
+                      <button
+                        onClick={() => onPlay(o.video!, o.name)}
+                        className="rounded-lg bg-surface px-3 py-1 text-xs font-medium text-accent"
+                      >
+                        ▶ Play
+                      </button>
+                    ) : (
+                      <span className="text-xs text-slate-600">no video</span>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+
+            {slot.note && <div className="mt-1 text-xs text-slate-500">{slot.note}</div>}
+          </div>
+        ))}
       </div>
 
       {/* Sticky finish button */}

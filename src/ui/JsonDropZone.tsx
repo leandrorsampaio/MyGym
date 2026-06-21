@@ -2,8 +2,6 @@ import { useState } from 'react';
 import { Sheet } from './Sheet';
 import { ConfirmDialog } from './ConfirmDialog';
 import { useStore } from '../store/useStore';
-import { generateSeedLog } from '../dev/seed';
-import { todayISO } from '../lib/clock';
 
 /** Drag & drop (or tap to pick) a program JSON file to replace the current program. */
 export function ProgramSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
@@ -15,7 +13,7 @@ export function ProgramSheet({ open, onClose }: { open: boolean; onClose: () => 
   const [error, setError] = useState<string | null>(null);
   const [ok, setOk] = useState<string | null>(null);
   const [dragging, setDragging] = useState(false);
-  const [confirm, setConfirm] = useState<'load' | 'clear' | null>(null);
+  const [confirmClear, setConfirmClear] = useState(false);
 
   const handleFile = async (file: File) => {
     setError(null);
@@ -95,41 +93,18 @@ export function ProgramSheet({ open, onClose }: { open: boolean; onClose: () => 
           <div className="mb-2 text-xs font-semibold uppercase tracking-wide text-slate-500">
             Activity data ({logCount} entries)
           </div>
-          <div className="grid grid-cols-2 gap-2">
-            <button
-              onClick={() => setConfirm('load')}
-              className="rounded-xl border border-line py-2 text-sm text-slate-200"
-            >
-              Load demo data
-            </button>
-            <button
-              onClick={() => setConfirm('clear')}
-              className="rounded-xl border border-line py-2 text-sm text-red-300"
-            >
-              Clear activity
-            </button>
-          </div>
+          <button
+            onClick={() => setConfirmClear(true)}
+            disabled={logCount === 0}
+            className="w-full rounded-xl border border-line py-2 text-sm text-red-300 disabled:opacity-40"
+          >
+            Clear all activity
+          </button>
         </div>
       </div>
 
       <ConfirmDialog
-        open={confirm === 'load'}
-        title="Load demo data?"
-        message={`This replaces your current ${logCount} activity ${
-          logCount === 1 ? 'entry' : 'entries'
-        } with ~1 year of generated demo data.`}
-        confirmLabel="Load demo"
-        onConfirm={() => {
-          replaceLog(generateSeedLog(todayISO()));
-          setOk('Loaded ~1 year of demo activity.');
-          setError(null);
-          setConfirm(null);
-        }}
-        onCancel={() => setConfirm(null)}
-      />
-
-      <ConfirmDialog
-        open={confirm === 'clear'}
+        open={confirmClear}
         title="Clear all activity?"
         message={`This permanently deletes all ${logCount} logged ${
           logCount === 1 ? 'entry' : 'entries'
@@ -140,9 +115,9 @@ export function ProgramSheet({ open, onClose }: { open: boolean; onClose: () => 
           replaceLog([]);
           setOk('Cleared all activity.');
           setError(null);
-          setConfirm(null);
+          setConfirmClear(false);
         }}
-        onCancel={() => setConfirm(null)}
+        onCancel={() => setConfirmClear(false)}
       />
     </Sheet>
   );
