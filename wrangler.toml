@@ -7,7 +7,7 @@ compatibility_date = "2024-09-23"
 [[d1_databases]]
 binding = "DB"                 # available in Functions as env.DB
 database_name = "mygym"
-database_id = "REPLACE_AFTER_CREATE"
+database_id = "75aa524a-eebd-4314-b95c-1d83b3a5053e"
 
 # Non-secret vars. ALLOWED_EMAIL gates the API to your account.
 # ACCESS_TEAM_DOMAIN / ACCESS_AUD enable JWT verification (set once Access is configured).
