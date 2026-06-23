@@ -12,6 +12,6 @@ database_id = "75aa524a-eebd-4314-b95c-1d83b3a5053e"
 # Non-secret vars. ALLOWED_EMAIL gates the API to your account.
 # ACCESS_TEAM_DOMAIN / ACCESS_AUD enable JWT verification (set once Access is configured).
 [vars]
-ALLOWED_EMAIL = ""
-ACCESS_TEAM_DOMAIN = ""        # e.g. "lsampaio.cloudflareaccess.com"
-ACCESS_AUD = ""               # the Access application AUD tag
+ALLOWED_EMAIL = "leandro.r.sampaio@gmail.com"
+ACCESS_TEAM_DOMAIN = "leandrorsampaio.cloudflareaccess.com"
+ACCESS_AUD = "35da0344be3a7fdad472d0742ac9c01acad3fbe4da350b895561ccb3cde15f77"
