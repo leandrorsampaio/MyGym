@@ -29,6 +29,8 @@ interface State {
   deleteEntry: (id: string) => void;
   /** Merge entries pulled from the cloud (last-write-wins). */
   applyRemote: (entries: LogEntry[]) => void;
+  /** Merge entries from a backup file. Returns how many were added or updated. */
+  importEntries: (entries: LogEntry[]) => number;
   /** Clear outbox items confirmed pushed. */
   clearSynced: (upsertIds: string[], deleteIds: string[]) => void;
   /** Replace the whole log (demo data / clear). Resets the outbox. */
@@ -81,6 +83,18 @@ export const useStore = create<State>()(
         })),
       applyRemote: (entries) =>
         set((s) => ({ log: mergeRemote(s.log, entries, s.tombstones) })),
+      importEntries: (entries) => {
+        let merged = 0;
+        set((s) => {
+          const before = new Map(s.log.map((e) => [e.id, e.updatedAt]));
+          const next = mergeRemote(s.log, entries, s.tombstones);
+          // Anything new or newer than what we had needs backing up too.
+          const changed = next.filter((e) => before.get(e.id) !== e.updatedAt).map((e) => e.id);
+          merged = changed.length;
+          return { log: next, dirty: [...new Set([...s.dirty, ...changed])] };
+        });
+        return merged;
+      },
       clearSynced: (upsertIds, deleteIds) =>
         set((s) => ({
           dirty: s.dirty.filter((d) => !upsertIds.includes(d)),
