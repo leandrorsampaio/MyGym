@@ -8,6 +8,19 @@ export type Completion = 'complete' | 't1';
 export type Rating = 1 | 2 | 3;
 export type Sport = 'football' | 'futsal';
 
+/** Summary read off a Garmin Connect activity page (see `src/garmin/parse.ts`). */
+export interface GarminMetrics {
+  activityId: string;
+  /** Activity name as Garmin shows it, e.g. "Timed Activity". */
+  name?: string;
+  /** Elapsed time in seconds. */
+  durationSec?: number;
+  /** Metres. 0 on a device without GPS (the CIRQA band). */
+  distanceM?: number;
+  /** When we fetched it — the numbers are a snapshot, not live. */
+  fetchedAt: string;
+}
+
 export interface GymEntry {
   id: string;
   kind: 'gym';
@@ -32,6 +45,10 @@ export interface MatchEntry {
   sport: Sport;
   goals: number;
   rating: Rating;
+  /** Garmin Connect activity this match was recorded with. Pasted when logging. */
+  garminUrl?: string;
+  /** What we read off that activity. Absent until a fetch succeeds. */
+  garmin?: GarminMetrics;
   updatedAt: string;
 }
 

@@ -1,8 +1,10 @@
 import { useState } from 'react';
-import type { MatchEntry, Rating, Sport } from '../log/types';
+import type { GarminMetrics, MatchEntry, Rating, Sport } from '../log/types';
 import { Sheet } from './Sheet';
 import { StarRating } from './StarRating';
 import { todayISO } from '../lib/clock';
+import { fetchGarminMetrics } from '../garmin/api';
+import { formatDuration, parseGarminActivityId } from '../garmin/parse';
 
 type MatchFields = Omit<MatchEntry, 'id' | 'kind' | 'updatedAt'>;
 
@@ -25,9 +27,30 @@ export function LogMatchSheet({
   const [date, setDate] = useState(initial?.date ?? todayISO());
   const [goals, setGoals] = useState(initial?.goals ?? 0);
   const [rating, setRating] = useState<Rating>(initial?.rating ?? 2);
+  const [garminUrl, setGarminUrl] = useState(initial?.garminUrl ?? '');
+  const [garmin, setGarmin] = useState<GarminMetrics | undefined>(initial?.garmin);
+  const [fetching, setFetching] = useState(false);
+  const [garminError, setGarminError] = useState<string | null>(null);
+
+  const activityId = parseGarminActivityId(garminUrl);
+
+  const pullGarmin = async () => {
+    if (!activityId || fetching) return;
+    setFetching(true);
+    setGarminError(null);
+    try {
+      setGarmin(await fetchGarminMetrics(activityId));
+    } catch (err) {
+      setGarmin(undefined);
+      setGarminError((err as Error).message);
+    } finally {
+      setFetching(false);
+    }
+  };
 
   const submit = () => {
-    onSubmit({ date, sport, goals, rating });
+    // Always send both keys so clearing the field clears them on an edit too.
+    onSubmit({ date, sport, goals, rating, garminUrl: garminUrl.trim() || undefined, garmin });
     onClose();
   };
 
@@ -80,6 +103,55 @@ export function LogMatchSheet({
         <div>
           <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">Performance</div>
           <StarRating value={rating} onChange={setRating} />
+        </div>
+
+        <div>
+          <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
+            Garmin activity <span className="font-normal normal-case text-slate-600">· optional</span>
+          </div>
+          <div className="flex gap-2">
+            <input
+              type="url"
+              inputMode="url"
+              autoCapitalize="off"
+              autoCorrect="off"
+              spellCheck={false}
+              placeholder="Paste Garmin Connect link"
+              value={garminUrl}
+              onChange={(e) => {
+                setGarminUrl(e.target.value);
+                setGarmin(undefined);
+                setGarminError(null);
+              }}
+              onBlur={() => {
+                if (!garmin) void pullGarmin();
+              }}
+              className="min-w-0 flex-1 rounded-lg border border-line bg-surface2 px-3 py-2 text-sm"
+            />
+            <button
+              onClick={() => void pullGarmin()}
+              disabled={!activityId || fetching}
+              className="shrink-0 rounded-lg border border-line px-3 py-2 text-sm text-accent disabled:opacity-40"
+            >
+              {fetching ? '…' : 'Fetch'}
+            </button>
+          </div>
+
+          {garmin && (
+            <div className="mt-2 rounded-lg bg-accent/10 p-2.5 text-sm text-accent">
+              {garmin.name ?? 'Activity'}
+              {garmin.durationSec != null && ` · ${formatDuration(garmin.durationSec)}`}
+              {!!garmin.distanceM && ` · ${(garmin.distanceM / 1000).toFixed(2)} km`}
+            </div>
+          )}
+          {garminError && (
+            <div className="mt-2 rounded-lg bg-red-500/10 p-2.5 text-xs text-red-300">{garminError}</div>
+          )}
+          {garminUrl.trim() && !activityId && !garminError && (
+            <div className="mt-2 text-xs text-slate-500">
+              Expecting a link like connect.garmin.com/app/activity/…
+            </div>
+          )}
         </div>
 
         <button onClick={submit} className="w-full rounded-xl bg-accent py-3 font-semibold text-bg active:bg-accentDim">

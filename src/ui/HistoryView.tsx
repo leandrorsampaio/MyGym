@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react';
+import { formatDuration } from '../garmin/parse';
 import type { LogEntry } from '../log/types';
 import { isGym } from '../log/types';
 import { isoWeekday } from '../engine/dates';
@@ -90,6 +91,7 @@ export function HistoryView({
                         <span className="text-slate-500">
                           {' · '}
                           {e.goals} {e.goals === 1 ? 'goal' : 'goals'}
+                          {e.garmin?.durationSec != null && ` · ${formatDuration(e.garmin.durationSec)}`}
                         </span>
                       </span>
                     )}
