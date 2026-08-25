@@ -15,7 +15,8 @@
     "icons": "node scripts/generate-icons.mjs",
     "pages:dev": "wrangler pages dev dist --d1=DB=mygym",
     "db:migrate:local": "wrangler d1 migrations apply mygym --local",
-    "db:migrate": "wrangler d1 migrations apply mygym --remote"
+    "db:migrate": "wrangler d1 migrations apply mygym --remote",
+    "garmin:scrape": "node scripts/garmin-scrape.mjs"
   },
   "dependencies": {
     "idb-keyval": "^6.2.1",
@@ -32,6 +33,7 @@
     "@vitejs/plugin-react": "^4.3.2",
     "autoprefixer": "^10.4.20",
     "postcss": "^8.4.47",
+    "puppeteer-core": "^25.9.0",
     "sharp": "^0.33.5",
     "tailwindcss": "^3.4.13",
     "typescript": "^5.6.2",
