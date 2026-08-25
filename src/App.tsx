@@ -25,6 +25,7 @@ type View = 'home' | 'workout' | 'history';
 
 export default function App() {
   const hydrated = useHydrated();
+  const authRequired = useStore((s) => s.authRequired);
   const program = useStore((s) => s.program);
   const log = useStore((s) => s.log);
   const addGym = useStore((s) => s.addGym);
@@ -94,6 +95,18 @@ export default function App() {
           </button>
         </div>
       </header>
+
+      {authRequired && (
+        <a
+          href="/signin"
+          className="mb-4 block rounded-xl border border-amber-500/40 bg-amber-500/10 p-3 text-center text-sm text-amber-200"
+        >
+          <span className="font-semibold">Sign in again to back up.</span>
+          <span className="block text-xs text-amber-200/70">
+            Your session expired — nothing is saved to the cloud until you do. Tap here.
+          </span>
+        </a>
+      )}
 
       {view === 'home' ? (
         <div className="space-y-4">

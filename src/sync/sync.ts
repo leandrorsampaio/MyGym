@@ -1,5 +1,5 @@
 import { useStore } from '../store/useStore';
-import { pullLogs, pushLogs } from './api';
+import { AuthRequired, pullLogs, pushLogs } from './api';
 
 let inFlight = false;
 
@@ -7,7 +7,8 @@ let inFlight = false;
  * Write-behind backup sync (single user, single device — no real conflicts):
  *   1. pull server entries and merge (last-write-wins),
  *   2. push anything still pending, then clear it.
- * Fails silently when offline / unauthenticated; pending state is retried later.
+ * Network failures stay quiet and retry later. An expired Access session sets
+ * `authRequired` so the UI can prompt a real sign-in — retrying that never helps.
  */
 export async function syncNow(): Promise<void> {
   if (inFlight) return;
@@ -15,6 +16,7 @@ export async function syncNow(): Promise<void> {
   inFlight = true;
   try {
     const remote = await pullLogs();
+    useStore.getState().setAuthRequired(false);
     useStore.getState().applyRemote(remote);
 
     const { log, dirty, tombstones } = useStore.getState();
@@ -27,8 +29,10 @@ export async function syncNow(): Promise<void> {
         tombstones.map((t) => t.id),
       );
     }
-  } catch {
-    // SyncUnavailable / network error → keep pending, retry on next trigger.
+  } catch (err) {
+    // Auth failures get surfaced so they can't hide; plain network errors stay quiet
+    // and retry on the next trigger.
+    useStore.getState().setAuthRequired(err instanceof AuthRequired);
   } finally {
     inFlight = false;
   }

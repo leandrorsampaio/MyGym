@@ -19,6 +19,9 @@ interface State {
   dirty: string[];
   /** Outbox: soft-deletes not yet pushed. */
   tombstones: Tombstone[];
+  /** Access session lapsed — sync can't succeed until the user signs in again. */
+  authRequired: boolean;
+  setAuthRequired: (v: boolean) => void;
   /** Replace the program from a dropped JSON value. Returns an error string on failure. */
   loadProgram: (input: unknown) => string | null;
   resetProgram: () => void;
@@ -45,6 +48,8 @@ export const useStore = create<State>()(
       log: [],
       dirty: [],
       tombstones: [],
+      authRequired: false,
+      setAuthRequired: (v) => set((s) => (s.authRequired === v ? s : { authRequired: v })),
       loadProgram: (input) => {
         const res = safeParseProgram(input);
         if (!res.success) {

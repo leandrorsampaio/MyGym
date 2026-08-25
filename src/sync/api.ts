@@ -1,13 +1,26 @@
 import type { LogEntry } from '../log/types';
 import type { Tombstone } from './merge';
 
-/** Thrown when the API can't be reached or Access redirected us to a login page. */
+/** Thrown when the API can't be reached (offline, server down). Retry later. */
 export class SyncUnavailable extends Error {}
 
+/**
+ * Thrown when Cloudflare Access bounced us to a login page, or the API rejected the
+ * token. Retrying is pointless — the user has to sign in again, which needs a real
+ * navigation (see `functions/signin.ts`). Distinct from SyncUnavailable so the UI can
+ * say so instead of silently piling up unsynced entries, which once hid a two-month
+ * outage.
+ */
+export class AuthRequired extends Error {}
+
 async function asJson(res: Response): Promise<any> {
-  // An Access login redirect yields HTML, not JSON — treat as "need re-auth, defer".
   const ct = res.headers.get('content-type') ?? '';
-  if (res.redirected || !res.ok || !ct.includes('application/json')) {
+  // Access serves an HTML login page (via redirect) instead of our JSON; a stale or
+  // missing token gets a 401/403 from checkAccess. Both mean "sign in again".
+  if (res.redirected || res.status === 401 || res.status === 403) {
+    throw new AuthRequired(`sign-in required (${res.status})`);
+  }
+  if (!res.ok || !ct.includes('application/json')) {
     throw new SyncUnavailable(`sync unavailable (${res.status})`);
   }
   return res.json();
