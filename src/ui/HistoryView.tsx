@@ -23,11 +23,13 @@ export function HistoryView({
   log,
   onBack,
   onEdit,
+  onOpen,
   onDelete,
 }: {
   log: LogEntry[];
   onBack: () => void;
   onEdit: (entry: LogEntry) => void;
+  onOpen: (entry: LogEntry) => void;
   onDelete: (id: string) => void;
 }) {
   const [pendingDelete, setPendingDelete] = useState<LogEntry | null>(null);
@@ -73,7 +75,7 @@ export function HistoryView({
                 }`}
               >
                 <span className="text-lg">{isGym(e) ? '🏋️' : '⚽'}</span>
-                <div className="min-w-0 flex-1">
+                <button onClick={() => onOpen(e)} className="min-w-0 flex-1 text-left">
                   <div className="truncate text-sm text-slate-100">
                     {isGym(e) ? (
                       <>
@@ -97,7 +99,7 @@ export function HistoryView({
                     )}
                   </div>
                   <div className="text-xs text-slate-500">{dayLabel(e.date)}</div>
-                </div>
+                </button>
                 <span className="text-xs text-amber-400">{stars(e.rating)}</span>
                 <button
                   onClick={() => onEdit(e)}

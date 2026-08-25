@@ -18,6 +18,7 @@ import { WorkoutView } from './ui/WorkoutView';
 import { VideoModal } from './ui/VideoModal';
 import { LogWorkoutSheet } from './ui/LogWorkoutSheet';
 import { LogMatchSheet } from './ui/LogMatchSheet';
+import { EntryDetailSheet } from './ui/EntryDetailSheet';
 import { ProgramSheet } from './ui/JsonDropZone';
 import { InstallHint } from './ui/InstallHint';
 
@@ -54,6 +55,7 @@ export default function App() {
   const [finishOpen, setFinishOpen] = useState(false);
   const [matchOpen, setMatchOpen] = useState(false);
   const [programOpen, setProgramOpen] = useState(false);
+  const [viewing, setViewing] = useState<LogEntry | null>(null);
   const [editing, setEditing] = useState<LogEntry | null>(null);
 
   const start = (s: SessionId) => {
@@ -139,6 +141,7 @@ export default function App() {
           log={log}
           onBack={() => setView('home')}
           onEdit={(entry) => setEditing(entry)}
+          onOpen={(entry) => setViewing(entry)}
           onDelete={(id) => {
             deleteEntry(id);
             void syncNow();
@@ -184,6 +187,16 @@ export default function App() {
         }}
       />
       <ProgramSheet open={programOpen} onClose={() => setProgramOpen(false)} />
+
+      <EntryDetailSheet
+        entry={viewing}
+        program={program}
+        onClose={() => setViewing(null)}
+        onEdit={(entry) => {
+          setViewing(null);
+          setEditing(entry);
+        }}
+      />
 
       {/* Edit an existing log entry (remounts per entry via key so fields pre-fill). */}
       {editing && isGym(editing) && (
