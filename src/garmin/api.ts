@@ -15,7 +15,13 @@ export async function fetchGarminMetrics(activityId: string): Promise<GarminMetr
       headers: { accept: 'application/json' },
     });
   } catch {
-    throw new Error("You're offline — the link is saved, fetch it later.");
+    // A Cloudflare Access redirect is cross-origin, so it throws here just like a dead
+    // connection does — `navigator.onLine` is the only thing that tells them apart.
+    throw new Error(
+      navigator.onLine
+        ? "Couldn't reach the server — you may need to sign in again. The link is saved."
+        : "You're offline — the link is saved, fetch it later.",
+    );
   }
 
   // An Access login redirect (or the dev server) yields HTML, not JSON.
