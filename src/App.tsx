@@ -148,7 +148,14 @@ export default function App() {
           />
         </div>
       ) : view === 'progress' ? (
-        <ProgressView log={log} today={today} />
+        <ProgressView
+          log={log}
+          today={today}
+          onEntry={(entry) => {
+            updateEntry(entry);
+            void syncNow();
+          }}
+        />
       ) : (
         <WorkoutView
           program={program}

@@ -15,7 +15,7 @@ const zones = (easy: number, hard: number) => [
 ];
 
 const render = (log: LogEntry[]) =>
-  renderToStaticMarkup(createElement(ProgressView, { log, today: TODAY }));
+  renderToStaticMarkup(createElement(ProgressView, { log, today: TODAY, onEntry: () => {} }));
 
 describe('with nothing linked yet', () => {
   const html = render([gym('2026-08-24', 'A'), match('2026-08-24', 'football', { goals: 1 })]);
@@ -73,5 +73,19 @@ describe('with enough history to trend', () => {
 
   it('reports the median match load alongside the HR trend', () => {
     expect(html).toContain('median load');
+  });
+});
+
+describe('the catch-up banner', () => {
+  it('offers to fetch entries that have a link but no data', () => {
+    const html = render([
+      match('2026-08-24', 'football', { garminUrl: 'https://connect.garmin.com/app/activity/24101714769' }),
+    ]);
+    expect(html).toContain('1 activity has a Garmin link but');
+    expect(html).toContain('Fetch them all');
+  });
+
+  it('stays out of the way when there is nothing to catch up on', () => {
+    expect(render([match('2026-08-24', 'football', { goals: 1 })])).not.toContain('Fetch them all');
   });
 });

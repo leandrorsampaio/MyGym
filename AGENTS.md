@@ -86,6 +86,7 @@ src/
     parse.ts                URL → activity id; Open Graph fallback parsing (shared w/ Functions)
     shape.ts                Garmin's raw DTOs → GarminMetrics (pure, tested on real payloads)
     api.ts                  fetch wrapper for /api/garmin
+    backfill.ts             find + fetch every linked activity that has no data yet
     fixtures/               real captured payloads for activity 24101714769
   lib/clock.ts            todayISO / nowISO / newId — the ONLY place UI reads the clock
   lib/youtube.ts          YouTube Shorts/watch URL → embed URL

@@ -8,6 +8,7 @@ import {
   TREND_MIN_POINTS,
 } from "../engine/progress";
 import { LineChart, Panel, StackedBars } from "./Chart";
+import { GarminBackfill } from "./GarminBackfill";
 import { SessionBreakdown } from "./SessionBreakdown";
 import { Highlights } from "./Highlights";
 import { StatTiles } from "./Stats";
@@ -47,9 +48,12 @@ function Legend({ items }: { items: { label: string; fill: string }[] }) {
 export function ProgressView({
   log,
   today,
+  onEntry,
 }: {
   log: LogEntry[];
   today: string;
+  /** Persists an entry the backfill has just filled in. */
+  onEntry: (entry: LogEntry) => void;
 }) {
   const weeks = useMemo(() => weeklyLoad(log, today, 12), [log, today]);
   const points = useMemo(() => activityPoints(log), [log]);
@@ -75,6 +79,8 @@ export function ProgressView({
     // One flat grid rather than two packed columns: on a phone the panels then appear in
     // priority order (the charts first), and on desktop they pair up two to a row.
     <div className="space-y-4 md:grid md:grid-cols-2 md:items-start md:gap-4 md:space-y-0">
+      <GarminBackfill log={log} onEntry={onEntry} />
+
       <Panel
         title="Weekly training load"
         aside={
