@@ -21,13 +21,11 @@ const stars = (n: number) => '★'.repeat(n) + '☆'.repeat(3 - n);
 
 export function HistoryView({
   log,
-  onBack,
   onEdit,
   onOpen,
   onDelete,
 }: {
   log: LogEntry[];
-  onBack: () => void;
   onEdit: (entry: LogEntry) => void;
   onOpen: (entry: LogEntry) => void;
   onDelete: (id: string) => void;
@@ -50,14 +48,11 @@ export function HistoryView({
   }, [log]);
 
   return (
-    <div className="pb-10 md:mx-auto md:max-w-3xl">
-      <div className="flex items-center justify-between py-1">
-        <button onClick={onBack} className="text-sm text-slate-400 hover:text-slate-100">
-          ← Home
-        </button>
-        <span className="text-sm text-slate-500">{log.length} entries</span>
+    <div>
+      <div className="mb-2 flex items-baseline justify-between">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-slate-500">All activity</h2>
+        <span className="text-xs text-slate-500">{log.length} entries</span>
       </div>
-      <h1 className="mb-3 mt-1 text-2xl font-bold">Activity history</h1>
 
       {log.length === 0 && <p className="text-slate-500">No activity logged yet.</p>}
 

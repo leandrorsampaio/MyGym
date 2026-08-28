@@ -63,7 +63,8 @@ Consequences you must preserve:
 
 ```
 src/
-  main.tsx, App.tsx        App entry + the single-page view switch (home | workout | history)
+  main.tsx, App.tsx        App entry + the single-page view switch (see views.ts)
+  views.ts                The View union: today | log | progress | workout
   index.css               Tailwind + iOS safe-area helpers
   data/program.json       THE PROGRAM DATA (exercises, reps, rest, videos, thumbnails)
   program/schema.ts       Zod schema + types for the program (Movement, Item, Workout, Program…)
@@ -135,7 +136,11 @@ npm run deploy             # build + deploy the Pages app to production
    persists. This is handled by the `merge` in `useStore.ts` via `programSource: 'builtin' | 'custom'` —
    if you change program data, the built-in path picks it up automatically on reload (no migration needed).
 4. **Rotation is derived from the log**, not stored. Don't add rotation counters.
-5. **Single page, no router.** Add views as state in `App.tsx` (like `history`), not routes.
+5. **Single page, no router.** Views are state (`views.ts` → `App.tsx`), never routes. Three
+   nav destinations — **Today** (the daily coach: next session + logging), **Log** (heatmap +
+   history, opening into entry detail), **Progress** (the dashboard) — plus `workout`, a
+   focused mode entered from Today that hides the nav. Put a new block on the page whose job
+   it serves; do not grow Today, which must stay a five-second page.
 6. **Mobile-first, iOS.** Design for iPhone Safari. No Background Sync (sync on app-open + `online`).
 7. **Add tests for pure logic.** Anything in `engine/` or `sync/merge.ts` should get a vitest test.
 8. **Match surrounding code style.** TypeScript strict, Tailwind utility classes, theme colors in

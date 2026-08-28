@@ -21,8 +21,8 @@ import { LogMatchSheet } from './ui/LogMatchSheet';
 import { EntryDetailSheet } from './ui/EntryDetailSheet';
 import { ProgramSheet } from './ui/JsonDropZone';
 import { InstallHint } from './ui/InstallHint';
-
-type View = 'home' | 'workout' | 'history';
+import { BottomNav, TopNav } from './ui/NavTabs';
+import type { View } from './views';
 
 export default function App() {
   const hydrated = useHydrated();
@@ -49,7 +49,7 @@ export default function App() {
   const slot3Next = useMemo(() => nextSlot3(program, log), [program, log]);
   const cType = useMemo(() => nextCType(program, log), [program, log]);
 
-  const [view, setView] = useState<View>('home');
+  const [view, setView] = useState<View>('today');
   const [activeSession, setActiveSession] = useState<SessionId>(rec.nextSession);
   const [video, setVideo] = useState<{ url: string; title: string } | null>(null);
   const [finishOpen, setFinishOpen] = useState(false);
@@ -58,10 +58,14 @@ export default function App() {
   const [viewing, setViewing] = useState<LogEntry | null>(null);
   const [editing, setEditing] = useState<LogEntry | null>(null);
 
+  const go = (v: View) => {
+    setView(v);
+    window.scrollTo(0, 0);
+  };
+
   const start = (s: SessionId) => {
     setActiveSession(s);
-    setView('workout');
-    window.scrollTo(0, 0);
+    go('workout');
   };
 
   const legAppend = activeSession === rec.nextSession ? rec.legAppend : undefined;
@@ -77,7 +81,7 @@ export default function App() {
   }
 
   return (
-    <div className="safe-top mx-auto min-h-full max-w-md px-4 pb-10 md:max-w-5xl md:px-6">
+    <div className="safe-top mx-auto min-h-full max-w-md px-4 pb-24 md:max-w-5xl md:px-6 md:pb-10">
       <header className="flex items-center justify-between py-4">
         <h1 className="text-xl font-bold tracking-tight">
           My<span className="text-accent">Gym</span>
@@ -102,6 +106,8 @@ export default function App() {
         </div>
       </header>
 
+      {view !== 'workout' && <TopNav view={view} onGo={go} />}
+
       {authRequired && (
         <a
           href="/signin"
@@ -114,55 +120,45 @@ export default function App() {
         </a>
       )}
 
-      {view === 'home' ? (
-        <div className="space-y-4">
-          {/* Outside the grid: it renders on iPad too, where it would otherwise
-              take a column cell and push the layout out of place. */}
+      {view === 'today' ? (
+        // The daily job: what to do, and logging what you did. Nothing to read.
+        <div className="space-y-4 md:mx-auto md:max-w-2xl">
           <InstallHint />
-          <div className="space-y-4 md:grid md:grid-cols-2 md:items-start md:gap-4 md:space-y-0">
-            {/* What to do now. */}
-            <div className="space-y-4">
-              <Hero program={program} rec={rec} onStart={start} />
-              <button
-                onClick={() => setMatchOpen(true)}
-                className="w-full rounded-xl border border-line bg-surface py-3 font-medium text-slate-200 hover:border-slate-500 hover:bg-surface2"
-              >
-                ⚽ I played — log it
-              </button>
-              <LastActivity log={log} today={today} />
-              <ConsistencyChips log={log} today={today} />
-            </div>
-            {/* How it's going. */}
-            <div className="space-y-4">
-              <Heatmap log={log} today={today} />
-              <SessionBreakdown log={log} />
-              <Highlights log={log} />
-              <StatTiles log={log} />
-            </div>
-          </div>
-          {/* Below the grid, so on a phone this stays where it always was: the last
-              thing on the page, after the stats. */}
+          <Hero program={program} rec={rec} onStart={start} />
           <button
-            onClick={() => {
-              setView('history');
-              window.scrollTo(0, 0);
-            }}
+            onClick={() => setMatchOpen(true)}
             className="w-full rounded-xl border border-line bg-surface py-3 font-medium text-slate-200 hover:border-slate-500 hover:bg-surface2"
           >
-            📋 View all activity ({log.length})
+            ⚽ I played — log it
           </button>
+          <LastActivity log={log} today={today} />
+          <ConsistencyChips log={log} today={today} />
         </div>
-      ) : view === 'history' ? (
-        <HistoryView
-          log={log}
-          onBack={() => setView('home')}
-          onEdit={(entry) => setEditing(entry)}
-          onOpen={(entry) => setViewing(entry)}
-          onDelete={(id) => {
-            deleteEntry(id);
-            void syncNow();
-          }}
-        />
+      ) : view === 'log' ? (
+        // What you did: the calendar and the list, which open into entry detail.
+        <div className="space-y-4 md:mx-auto md:max-w-3xl">
+          <Heatmap log={log} today={today} />
+          <HistoryView
+            log={log}
+            onEdit={(entry) => setEditing(entry)}
+            onOpen={(entry) => setViewing(entry)}
+            onDelete={(id) => {
+              deleteEntry(id);
+              void syncNow();
+            }}
+          />
+        </div>
+      ) : view === 'progress' ? (
+        // How it's going. Two columns here, because a dashboard is what width is for.
+        <div className="space-y-4 md:grid md:grid-cols-2 md:items-start md:gap-4 md:space-y-0">
+          <div className="space-y-4">
+            <SessionBreakdown log={log} />
+            <StatTiles log={log} />
+          </div>
+          <div className="space-y-4">
+            <Highlights log={log} />
+          </div>
+        </div>
       ) : (
         <WorkoutView
           program={program}
@@ -171,7 +167,7 @@ export default function App() {
           slot3Next={slot3Next}
           legAppend={legAppend}
           onPlay={(url, title) => setVideo({ url, title })}
-          onBack={() => setView('home')}
+          onBack={() => go('today')}
           onFinish={() => setFinishOpen(true)}
         />
       )}
@@ -189,8 +185,7 @@ export default function App() {
         onSubmit={(e) => {
           addGym(e);
           void syncNow();
-          setView('home');
-          window.scrollTo(0, 0);
+          go('today');
         }}
       />
 
@@ -203,6 +198,8 @@ export default function App() {
         }}
       />
       <ProgramSheet open={programOpen} onClose={() => setProgramOpen(false)} />
+
+      {view !== 'workout' && <BottomNav view={view} onGo={go} />}
 
       <EntryDetailSheet
         entry={viewing}
