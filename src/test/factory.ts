@@ -19,6 +19,8 @@ export function gym(
     cType: extra.cType,
     slot3: extra.slot3,
     legAppend: extra.legAppend,
+    garminUrl: extra.garminUrl,
+    garmin: extra.garmin,
     updatedAt: extra.updatedAt ?? `${date}T12:00:00Z`,
   };
 }
@@ -35,6 +37,8 @@ export function match(
     sport,
     goals: extra.goals ?? 0,
     rating: (extra.rating ?? 2) as Rating,
+    garminUrl: extra.garminUrl,
+    garmin: extra.garmin,
     updatedAt: extra.updatedAt ?? `${date}T20:00:00Z`,
   };
 }

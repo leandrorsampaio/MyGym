@@ -8,11 +8,10 @@ import { initSync, syncNow } from './sync/sync';
 import type { LogEntry, SessionId } from './log/types';
 import { isGym } from './log/types';
 import { Hero } from './ui/Hero';
-import { ConsistencyChips, StatTiles } from './ui/Stats';
+import { ConsistencyChips } from './ui/Stats';
 import { LastActivity } from './ui/LastActivity';
 import { Heatmap } from './ui/Heatmap';
-import { Highlights } from './ui/Highlights';
-import { SessionBreakdown } from './ui/SessionBreakdown';
+import { ProgressView } from './ui/ProgressView';
 import { HistoryView } from './ui/HistoryView';
 import { WorkoutView } from './ui/WorkoutView';
 import { VideoModal } from './ui/VideoModal';
@@ -149,16 +148,7 @@ export default function App() {
           />
         </div>
       ) : view === 'progress' ? (
-        // How it's going. Two columns here, because a dashboard is what width is for.
-        <div className="space-y-4 md:grid md:grid-cols-2 md:items-start md:gap-4 md:space-y-0">
-          <div className="space-y-4">
-            <SessionBreakdown log={log} />
-            <StatTiles log={log} />
-          </div>
-          <div className="space-y-4">
-            <Highlights log={log} />
-          </div>
-        </div>
+        <ProgressView log={log} today={today} />
       ) : (
         <WorkoutView
           program={program}

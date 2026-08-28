@@ -75,6 +75,7 @@ src/
     rotation.ts             nextCType / nextSlot3, derived from the log
     stats.ts                gymStats / footballStats / consistency
     insights.ts             lastActivity / buildHeatmap / highlights (homepage extras)
+    progress.ts             weeklyLoad / activityPoints / goalTrend — the Progress dashboard
   store/useStore.ts       Zustand store (program + log + sync outbox), IndexedDB persistence
   store/idbStorage.ts     IndexedDB adapter for Zustand persist
   sync/                   Cloud backup sync (write-behind, last-write-wins)
@@ -242,8 +243,12 @@ code, sync code (verified locally against local D1).
 
 - **Add/replace an exercise video or thumbnail:** edit `src/data/program.json` (or use the in-app
   Download JSON → edit → drag back in). Validate with `npm test` (schema test parses it).
-- **Add a stat:** write a pure function in `engine/stats.ts` or `engine/insights.ts` + a vitest test,
-  then a small component in `src/ui/` and render it in `App.tsx`'s home view.
+- **Add a stat:** write a pure function in `engine/stats.ts`, `engine/insights.ts` or
+  `engine/progress.ts` + a vitest test, then a small component in `src/ui/` and render it on the
+  page whose job it serves (see invariant 5). A dashboard panel goes in `ui/ProgressView.tsx`
+  wrapped in `Panel`, whose body is a **function** so a panel with too little data never builds
+  the chart it cannot draw — and must say what is missing rather than draw a line through
+  three points.
 - **Change a coaching rule:** edit `engine/recommend.ts` and update/extend `recommend.test.ts`.
 - **Add a new view (e.g. settings page):** add a value to the `View` union in `App.tsx` and render it
   conditionally — do not add a router.
