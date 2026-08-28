@@ -6,7 +6,23 @@
 export type SessionId = 'A' | 'B' | 'C';
 export type Completion = 'complete' | 't1';
 export type Rating = 1 | 2 | 3;
-export type Sport = 'football' | 'futsal';
+
+/**
+ * The three things logged on the football side. `football` and `futsal` are real
+ * matches; `training` is a football session played without a match (no scoreline).
+ */
+export const SPORTS = ['football', 'training', 'futsal'] as const;
+export type Sport = (typeof SPORTS)[number];
+
+/** Only real matches carry a scoreline — training has no opponent to score against. */
+export function isMatchSport(sport: Sport): boolean {
+  return sport !== 'training';
+}
+
+/** Emoji for a football-side entry (lists, detail header). */
+export function sportIcon(sport: Sport): string {
+  return sport === 'training' ? '🥅' : '⚽';
+}
 
 /** Summary read off a Garmin Connect activity page (see `src/garmin/parse.ts`). */
 export interface GarminMetrics {
@@ -43,6 +59,7 @@ export interface MatchEntry {
   kind: 'match';
   date: string;
   sport: Sport;
+  /** Goals scored. Always 0 for `training`, which has no scoreline. */
   goals: number;
   rating: Rating;
   /** Garmin Connect activity this match was recorded with. Pasted when logging. */

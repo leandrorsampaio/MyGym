@@ -59,9 +59,22 @@ describe('highlights', () => {
     const h = highlights(log);
     expect(h.totalSessions).toBe(3);
     expect(h.totalMatches).toBe(2);
+    expect(h.totalTrainings).toBe(0);
     expect(h.totalGoals).toBe(7);
     expect(h.bestMatchGoals).toBe(5);
     expect(h.longestStreakWeeks).toBe(3);
+  });
+
+  it('counts training apart from matches', () => {
+    const log = [
+      match('2026-06-02', 'football', { goals: 2 }),
+      match('2026-06-04', 'training'),
+      match('2026-06-06', 'training'),
+    ];
+    const h = highlights(log);
+    expect(h.totalMatches).toBe(1);
+    expect(h.totalTrainings).toBe(2);
+    expect(h.totalGoals).toBe(2);
   });
 
   it('breaks the streak on a gap week', () => {

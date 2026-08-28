@@ -25,11 +25,36 @@ describe('footballStats', () => {
       match('2026-06-08', 'futsal', { goals: 4, rating: 2 }),
     ];
     const s = footballStats(log);
+    expect(s.total).toBe(2);
     expect(s.matches).toBe(2);
-    expect(s.bySport).toEqual({ football: 1, futsal: 1 });
+    expect(s.trainings).toBe(0);
+    expect(s.bySport).toEqual({ football: 1, training: 0, futsal: 1 });
     expect(s.totalGoals).toBe(6);
     expect(s.goalsPerMatch).toBe(3);
     expect(s.avgRating).toBe(2.5);
+  });
+
+  it('counts training separately and keeps it out of goals-per-match', () => {
+    const log = [
+      match('2026-06-01', 'football', { goals: 2, rating: 3 }),
+      match('2026-06-04', 'training', { rating: 1 }),
+      match('2026-06-06', 'training', { rating: 2 }),
+    ];
+    const s = footballStats(log);
+    expect(s.total).toBe(3);
+    expect(s.matches).toBe(1);
+    expect(s.trainings).toBe(2);
+    expect(s.bySport).toEqual({ football: 1, training: 2, futsal: 0 });
+    expect(s.totalGoals).toBe(2);
+    expect(s.goalsPerMatch).toBe(2); // not diluted to 2/3 by the two trainings
+    expect(s.avgRating).toBe(2); // rating averages over everything played
+  });
+
+  it('training alone leaves goals-per-match at zero', () => {
+    const s = footballStats([match('2026-06-04', 'training')]);
+    expect(s.matches).toBe(0);
+    expect(s.trainings).toBe(1);
+    expect(s.goalsPerMatch).toBe(0);
   });
 
   it('handles an empty log without dividing by zero', () => {

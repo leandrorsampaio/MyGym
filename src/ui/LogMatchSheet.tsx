@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { GarminMetrics, MatchEntry, Rating, Sport } from '../log/types';
+import { SPORTS, isMatchSport } from '../log/types';
 import { Sheet } from './Sheet';
 import { StarRating } from './StarRating';
 import { todayISO } from '../lib/clock';
@@ -11,8 +12,8 @@ type MatchFields = Omit<MatchEntry, 'id' | 'kind' | 'updatedAt'>;
 export function LogMatchSheet({
   open,
   initial,
-  title = 'Log a match',
-  submitLabel = 'Log match',
+  title = 'Log football',
+  submitLabel = 'Log it',
   onClose,
   onSubmit,
 }: {
@@ -48,17 +49,28 @@ export function LogMatchSheet({
     }
   };
 
+  // Training has no scoreline, so it always stores 0 — but keep the typed value in state
+  // so toggling back to football/futsal restores what was entered.
+  const scored = isMatchSport(sport);
+
   const submit = () => {
     // Always send both keys so clearing the field clears them on an edit too.
-    onSubmit({ date, sport, goals, rating, garminUrl: garminUrl.trim() || undefined, garmin });
+    onSubmit({
+      date,
+      sport,
+      goals: scored ? goals : 0,
+      rating,
+      garminUrl: garminUrl.trim() || undefined,
+      garmin,
+    });
     onClose();
   };
 
   return (
     <Sheet open={open} onClose={onClose} title={title}>
       <div className="space-y-4">
-        <div className="grid grid-cols-2 gap-2">
-          {(['football', 'futsal'] as Sport[]).map((s) => (
+        <div className="grid grid-cols-3 gap-2">
+          {SPORTS.map((s) => (
             <button
               key={s}
               onClick={() => setSport(s)}
@@ -81,24 +93,26 @@ export function LogMatchSheet({
           />
         </div>
 
-        <div>
-          <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">Goals</div>
-          <div className="flex items-center gap-3">
-            <button
-              onClick={() => setGoals((g) => Math.max(0, g - 1))}
-              className="h-11 w-11 rounded-lg border border-line text-xl"
-            >
-              −
-            </button>
-            <span className="w-10 text-center text-2xl font-semibold">{goals}</span>
-            <button
-              onClick={() => setGoals((g) => g + 1)}
-              className="h-11 w-11 rounded-lg border border-line text-xl"
-            >
-              +
-            </button>
+        {scored && (
+          <div>
+            <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">Goals</div>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setGoals((g) => Math.max(0, g - 1))}
+                className="h-11 w-11 rounded-lg border border-line text-xl"
+              >
+                −
+              </button>
+              <span className="w-10 text-center text-2xl font-semibold">{goals}</span>
+              <button
+                onClick={() => setGoals((g) => g + 1)}
+                className="h-11 w-11 rounded-lg border border-line text-xl"
+              >
+                +
+              </button>
+            </div>
           </div>
-        </div>
+        )}
 
         <div>
           <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">Performance</div>

@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { formatDuration } from '../garmin/parse';
 import type { LogEntry } from '../log/types';
-import { isGym } from '../log/types';
+import { isGym, isMatchSport, sportIcon } from '../log/types';
 import { isoWeekday } from '../engine/dates';
 import { ConfirmDialog } from './ConfirmDialog';
 
@@ -74,7 +74,7 @@ export function HistoryView({
                   i > 0 ? 'border-t border-line' : ''
                 }`}
               >
-                <span className="text-lg">{isGym(e) ? '🏋️' : '⚽'}</span>
+                <span className="text-lg">{isGym(e) ? '🏋️' : sportIcon(e.sport)}</span>
                 <button onClick={() => onOpen(e)} className="min-w-0 flex-1 text-left">
                   <div className="truncate text-sm text-slate-100">
                     {isGym(e) ? (
@@ -91,8 +91,7 @@ export function HistoryView({
                       <span className="capitalize">
                         {e.sport}
                         <span className="text-slate-500">
-                          {' · '}
-                          {e.goals} {e.goals === 1 ? 'goal' : 'goals'}
+                          {isMatchSport(e.sport) && ` · ${e.goals} ${e.goals === 1 ? 'goal' : 'goals'}`}
                           {e.garmin?.durationSec != null && ` · ${formatDuration(e.garmin.durationSec)}`}
                         </span>
                       </span>

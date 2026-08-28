@@ -15,6 +15,11 @@ const match: LogEntry = {
   updatedAt: '2026-08-24T21:00:00.000Z',
 };
 
+const training: LogEntry = {
+  id: 'm2', kind: 'match', date: '2026-08-26', sport: 'training', goals: 0, rating: 2,
+  updatedAt: '2026-08-26T21:00:00.000Z',
+};
+
 describe('buildBackup', () => {
   it('wraps the log with a count and timestamp', () => {
     const b = buildBackup([gym, match], '2026-08-25T22:00:00.000Z');
@@ -56,5 +61,19 @@ describe('parseBackup', () => {
 
   it('keeps an empty log valid', () => {
     expect(parseBackup(buildBackup([], '2026-08-25T22:00:00.000Z'))).toEqual({ entries: [] });
+  });
+});
+
+describe('training entries', () => {
+  it('round-trips through a backup', () => {
+    const b = buildBackup([training], '2026-08-26T22:00:00.000Z');
+    const parsed = parseBackup(JSON.parse(JSON.stringify(b)));
+    expect(parsed).toEqual({ entries: [training] });
+  });
+
+  it('rejects a sport outside the three', () => {
+    const bad = { ...training, sport: 'tennis' };
+    const parsed = parseBackup([bad]);
+    expect(parsed).toHaveProperty('error');
   });
 });

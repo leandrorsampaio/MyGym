@@ -223,7 +223,7 @@ The app also **tracks rotation state automatically**:
 
 > Logging is **whole-workout only** — no per-exercise checkboxes, no weight logging (keep it simple).
 
-### 9.3 Log a football / futsal session
+### 9.3 Log a football / training / futsal session
 1. Tap **"I played"** (or check the day).
 2. Select **Football** or **Futsal**.
 3. **Date** defaults to today; if it wasn't today, open a **calendar** to pick the day.
@@ -249,7 +249,7 @@ Possible metrics (TBD):
 - Last workout date.
 
 **Football / Futsal**
-- Matches played (football vs. futsal breakdown).
+- Matches played (football vs. futsal breakdown) and training sessions, counted separately.
 - Total goals / goals per match.
 - Average performance (stars).
 - Matches per week.
@@ -319,7 +319,8 @@ Compact chips: **sessions this week**, **streak (weeks)**, **sessions-per-week a
 
 ### 13.3 Summary tiles (side by side, expandable zone)
 - **Gym tile** — total sessions, A/B/C counts, complete vs T1-only ratio, average session ⭐.
-- **Football tile** — matches played (football vs futsal), goals (total + per match), average ⭐.
+- **Football tile** — matches played (football vs futsal), training sessions, goals (total + per
+  match, over real matches only), average ⭐.
 
 > All four stat groups confirmed as wanted: **consistency, football performance, gym breakdown, cycle status**. The tiles area is the natural place to add more later.
 

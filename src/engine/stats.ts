@@ -3,7 +3,7 @@
  * Covers the four homepage groups: consistency, football, gym breakdown, cycle.
  */
 import type { LogEntry, SessionId, Sport } from '../log/types';
-import { isGym, isMatch } from '../log/types';
+import { isGym, isMatch, isMatchSport } from '../log/types';
 import { isoWeekKey, addDays } from './dates';
 
 function avg(nums: number[]): number {
@@ -33,24 +33,34 @@ export function gymStats(log: LogEntry[]): GymStats {
 }
 
 export interface FootballStats {
+  /** Everything logged on the football side — real matches plus training. */
+  total: number;
+  /** Real matches only (football + futsal). Training has no scoreline. */
   matches: number;
+  /** Football sessions played without a match. */
+  trainings: number;
   bySport: Record<Sport, number>;
+  /** Goals and goals/match are over real matches only, so training doesn't dilute them. */
   totalGoals: number;
   goalsPerMatch: number;
+  /** Performance rating averaged over everything on the football side, training included. */
   avgRating: number;
 }
 
 export function footballStats(log: LogEntry[]): FootballStats {
-  const matches = log.filter(isMatch);
-  const bySport: Record<Sport, number> = { football: 0, futsal: 0 };
-  for (const e of matches) bySport[e.sport]++;
+  const played = log.filter(isMatch);
+  const bySport: Record<Sport, number> = { football: 0, training: 0, futsal: 0 };
+  for (const e of played) bySport[e.sport]++;
+  const matches = played.filter((e) => isMatchSport(e.sport));
   const totalGoals = matches.reduce((a, e) => a + e.goals, 0);
   return {
+    total: played.length,
     matches: matches.length,
+    trainings: bySport.training,
     bySport,
     totalGoals,
     goalsPerMatch: matches.length ? totalGoals / matches.length : 0,
-    avgRating: avg(matches.map((e) => e.rating)),
+    avgRating: avg(played.map((e) => e.rating)),
   };
 }
 

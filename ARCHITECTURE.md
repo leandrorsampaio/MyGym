@@ -72,7 +72,7 @@ type LogEntry =
       legAppend?: boolean;                              // C augmented w/ Squat+RDL (2-futsal rule)
       updatedAt: string }
   | { id: string; kind: 'match'; date: string;
-      sport: 'football' | 'futsal';
+      sport: 'football' | 'training' | 'futsal';   // 'training' = played, no match → goals always 0
       goals: number;
       rating: 1 | 2 | 3;
       updatedAt: string };
@@ -94,7 +94,7 @@ recommend(program, log, today, schedule?) → { nextSession, reason, warnings[],
 
 **Guard-rails** (each a predicate over the log):
 - **Never B within 48h of a match** → defer B, suggest A/C.
-- **Never two hard leg-loads back-to-back** (B and futsal both load legs).
+- **Never two hard leg-loads back-to-back** (B, a match and football training all load legs).
 - **Two futsal weeks without leg loading** → flag C to append **Squat 2×5 + RDL 2×8**; surface ⚠️ on hero.
 
 **Optional `schedule` config** (typical week: Mon = football, Thu = futsal) powers *forward-looking* rules (the 48h rule), beyond just logged past matches.

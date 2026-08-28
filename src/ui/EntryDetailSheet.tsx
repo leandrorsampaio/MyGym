@@ -1,5 +1,5 @@
 import type { LogEntry } from '../log/types';
-import { isGym } from '../log/types';
+import { isGym, isMatchSport, sportIcon } from '../log/types';
 import type { Program } from '../program/schema';
 import { Sheet } from './Sheet';
 import { formatDuration } from '../garmin/parse';
@@ -51,11 +51,15 @@ export function EntryDetailSheet({
   const gym = isGym(entry);
 
   return (
-    <Sheet open onClose={onClose} title={gym ? `Session ${entry.session}` : 'Match'}>
+    <Sheet
+      open
+      onClose={onClose}
+      title={gym ? `Session ${entry.session}` : isMatchSport(entry.sport) ? 'Match' : 'Training'}
+    >
       <div className="space-y-4">
         <div>
           <div className="text-lg font-semibold capitalize text-slate-100">
-            {gym ? `${'🏋️'} Session ${entry.session}` : `⚽ ${entry.sport}`}
+            {gym ? `${'🏋️'} Session ${entry.session}` : `${sportIcon(entry.sport)} ${entry.sport}`}
           </div>
           <div className="text-sm text-slate-500">{longDate(entry.date)}</div>
         </div>
@@ -71,7 +75,7 @@ export function EntryDetailSheet({
               {entry.legAppend && <Row label="Extra">Squat 2×5 + RDL 2×8</Row>}
             </>
           ) : (
-            <Row label="Goals">{entry.goals}</Row>
+            isMatchSport(entry.sport) && <Row label="Goals">{entry.goals}</Row>
           )}
           <Row label="Performance">
             <span className="text-amber-400">

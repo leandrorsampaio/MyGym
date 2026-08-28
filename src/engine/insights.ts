@@ -3,7 +3,7 @@
  * line, the activity heatmap, and auto-surfaced highlights/records.
  */
 import type { GymEntry, LogEntry, MatchEntry } from '../log/types';
-import { isGym, isMatch } from '../log/types';
+import { isGym, isMatch, isMatchSport } from '../log/types';
 import { addDays, daysBetween, isoWeekKey, mondayOf, weekIndex } from './dates';
 
 function newestByDate<T extends LogEntry>(entries: T[]): T | undefined {
@@ -73,7 +73,9 @@ export function buildHeatmap(log: LogEntry[], today: string, weeks = 12): HeatDa
 
 export interface Highlights {
   totalSessions: number;
+  /** Real matches only — training is counted separately so goal records stay honest. */
   totalMatches: number;
+  totalTrainings: number;
   totalGoals: number;
   bestMatchGoals: number;
   longestStreakWeeks: number;
@@ -82,7 +84,8 @@ export interface Highlights {
 
 export function highlights(log: LogEntry[]): Highlights {
   const gym = log.filter(isGym);
-  const matches = log.filter(isMatch);
+  const played = log.filter(isMatch);
+  const matches = played.filter((e) => isMatchSport(e.sport));
 
   // Longest run of consecutive ISO weeks with any activity.
   const indices = [...new Set(log.map((e) => weekIndex(e.date)))].sort((a, b) => a - b);
@@ -102,6 +105,7 @@ export function highlights(log: LogEntry[]): Highlights {
   return {
     totalSessions: gym.length,
     totalMatches: matches.length,
+    totalTrainings: played.length - matches.length,
     totalGoals: matches.reduce((a, m) => a + m.goals, 0),
     bestMatchGoals: matches.reduce((a, m) => Math.max(a, m.goals), 0),
     longestStreakWeeks: longest,

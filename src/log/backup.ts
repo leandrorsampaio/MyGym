@@ -7,7 +7,7 @@
  * Pure and clock-free: `now` is passed in, so this is unit-testable like `engine/*`.
  */
 import { z } from 'zod';
-import type { LogEntry } from './types';
+import { SPORTS, type LogEntry } from './types';
 
 const rating = z.union([z.literal(1), z.literal(2), z.literal(3)]);
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'expected a YYYY-MM-DD date');
@@ -37,7 +37,7 @@ const matchEntry = z.object({
   id: z.string().min(1),
   kind: z.literal('match'),
   date: isoDate,
-  sport: z.enum(['football', 'futsal']),
+  sport: z.enum(SPORTS),
   goals: z.number().int().min(0),
   rating,
   garminUrl: z.string().optional(),

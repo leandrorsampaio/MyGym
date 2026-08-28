@@ -46,6 +46,20 @@ describe('recommend — hard rules', () => {
     expect(r.warnings.join(' ')).toMatch(/48h/);
   });
 
+  it('never B within 48h of football training either (still a hard leg load)', () => {
+    const log = [gym('2026-06-10', 'A'), match('2026-06-17', 'training')];
+    const r = recommend(program, log, '2026-06-18'); // Thursday, no fixture within 48h
+    expect(r.nextSession).toBe('A');
+    expect(r.warnings.join(' ')).toMatch(/48h/);
+  });
+
+  it('training does not make a futsal week', () => {
+    const log = [gym('2026-06-15', 'A'), match('2026-06-16', 'training')];
+    const r = recommend(program, log, '2026-06-19'); // >48h after the training
+    expect(r.nextSession).toBe('B');
+    expect(r.reason).toMatch(/No futsal/i);
+  });
+
   it('never B the day before the regular Monday football fixture', () => {
     // Sunday: B was due, but Monday football is within 48h via the schedule.
     const r = recommend(program, [gym('2026-06-12', 'A')], '2026-06-21');

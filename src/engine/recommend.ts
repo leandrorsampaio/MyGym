@@ -12,7 +12,7 @@
  * B-vs-C: futsal week → C (matches cover legs); otherwise B (or C if "feeling heavy").
  *
  * Hard rules layered on top:
- *   - Never B within 48h of a match → swap to A (low leg demand, safe near matches).
+ *   - Never B within 48h of a match or football training → swap to A (low leg demand).
  *   - Never stack two hard leg loads back-to-back (B + match) → same swap.
  *   - Two futsal weeks in a row without leg loading → C gets Squat 2×5 + RDL 2×8.
  */
@@ -50,21 +50,28 @@ function lastGym(log: LogEntry[]) {
     )[0];
 }
 
-/** A week counts as a "futsal week" if a futsal match is logged in the same ISO week. */
+/**
+ * A week counts as a "futsal week" if a futsal match is logged in the same ISO week.
+ * Football training does not make one — only actual futsal covers the legs.
+ */
 function isFutsalWeek(log: LogEntry[], iso: string): boolean {
   const wk = isoWeekKey(iso);
   return log.some((e) => isMatch(e) && e.sport === 'futsal' && isoWeekKey(e.date) === wk);
 }
 
-/** Any logged match within ±2 calendar days of `today`. */
-function pastMatchWithin48h(log: LogEntry[], today: string): boolean {
+/**
+ * Any logged football-side entry within the last 2 calendar days. Training counts the
+ * same as a match here: it is still a hard leg load, and the rule this feeds exists to
+ * stop two of those landing back-to-back.
+ */
+function playedWithin48h(log: LogEntry[], today: string): boolean {
   return log.some((e) => isMatch(e) && daysApart(e.date, today) <= 2 && daysBetween(e.date, today) >= 0);
 }
 
 /**
  * A routine *football* match day (regular weekly fixture) falling today or in the
- * next 2 days. Futsal is occasional → it is detected from the log (isFutsalWeek /
- * pastMatchWithin48h), not projected forward from the schedule.
+ * next 2 days. Futsal and training are occasional → they are detected from the log
+ * (isFutsalWeek / playedWithin48h), not projected forward from the schedule.
  */
 function scheduledMatchWithin48h(schedule: WeeklySchedule | undefined, today: string): boolean {
   if (!schedule) return false;
@@ -128,11 +135,11 @@ export function recommend(
     }
   }
 
-  // --- hard rule: keep B away from matches (and avoid two hard leg loads back-to-back) ---
-  if (session === 'B' && (pastMatchWithin48h(log, today) || scheduledMatchWithin48h(schedule, today))) {
+  // --- hard rule: keep B away from football (and avoid two hard leg loads back-to-back) ---
+  if (session === 'B' && (playedWithin48h(log, today) || scheduledMatchWithin48h(schedule, today))) {
     session = 'A';
-    reason = 'A match is within 48h — swapping B for Session A (low leg demand, safe near matches).';
-    warnings.push('Avoided Session B within 48h of a match (no two hard leg loads back-to-back).');
+    reason = 'Football within 48h — swapping B for Session A (low leg demand, safe near a match).';
+    warnings.push('Avoided Session B within 48h of football (no two hard leg loads back-to-back).');
   }
 
   // --- two-futsal-weeks-without-legs rule ---

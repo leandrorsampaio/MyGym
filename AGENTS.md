@@ -138,7 +138,8 @@ npm run db:migrate         # apply migration to remote D1
 ### Recommendation (`engine/recommend.ts`)
 A 7–10 day cycle with 2 gym slots = **Session A + (B or C)**, A every cycle. Backbone: last gym A →
 next is B/C; last gym B/C → next is A; no history → A. **Futsal week → C, else B** (or C if
-`preferHeavy`). Hard rules layered on: never B within 48h of a match (→ swap to A); two futsal weeks
+`preferHeavy`). Hard rules layered on: never B within 48h of a match **or football training** (→ swap
+to A — both are hard leg loads); two futsal weeks
 without leg loading → C gets "Squat 2×5 + RDL 2×8". "Futsal week" = a futsal match **logged** in the
 same ISO week. The forward-looking 48h guard uses only the regular **football** schedule (Mon), since
 futsal is occasional. See `REQUIREMENTS.md` §8 and `trainning.md` for the full coaching rules.
@@ -152,7 +153,9 @@ optional `video` (YouTube), `thumbnail` (URL or app path), `reps`, `key`.
 
 ### Activity log (`log/types.ts`)
 `GymEntry` (session A/B/C, completion complete|t1, rating 1–3, cType for C, slot3, legAppend) or
-`MatchEntry` (sport football|futsal, goals, rating). Each has `id`, `date` (YYYY-MM-DD), `updatedAt`.
+`MatchEntry` (sport football|training|futsal, goals, rating). `training` is football played without a
+match, so it carries no scoreline (`goals` is always 0) and never counts as a "futsal week"; it *does*
+count for the 48h rule. Each has `id`, `date` (YYYY-MM-DD), `updatedAt`.
 
 ### Sync (`sync/`)
 Write-behind backup, single device → no real conflicts. Outbox = `dirty` ids + `tombstones` in the

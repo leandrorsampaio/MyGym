@@ -1,4 +1,5 @@
 import type { LogEntry } from '../log/types';
+import { isMatchSport } from '../log/types';
 import { lastActivity } from '../engine/insights';
 
 function ago(n: number): string {
@@ -26,12 +27,14 @@ export function LastActivity({ log, today }: { log: LogEntry[]; today: string })
         )}
       </div>
       <div className="flex-1 rounded-xl border border-line bg-surface px-3 py-2">
-        <div className="text-[11px] uppercase tracking-wide text-slate-500">Last match</div>
+        <div className="text-[11px] uppercase tracking-wide text-slate-500">Last football</div>
         {match ? (
           <div className="text-slate-200 capitalize">
             {match.entry.sport}
             <span className="text-slate-500"> · {ago(match.daysAgo)}</span>
-            <span className="ml-1 text-slate-400">⚽{match.entry.goals}</span>
+            {isMatchSport(match.entry.sport) && (
+              <span className="ml-1 text-slate-400">⚽{match.entry.goals}</span>
+            )}
           </div>
         ) : (
           <div className="text-slate-500">—</div>

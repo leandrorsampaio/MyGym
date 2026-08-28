@@ -118,7 +118,7 @@ export default function App() {
             onClick={() => setMatchOpen(true)}
             className="w-full rounded-xl border border-line bg-surface py-3 font-medium text-slate-200"
           >
-            ⚽ I played — log a match
+            ⚽ I played — log it
           </button>
           <LastActivity log={log} today={today} />
           <ConsistencyChips log={log} today={today} />
@@ -222,7 +222,7 @@ export default function App() {
           key={editing.id}
           open
           initial={editing}
-          title="Edit match"
+          title="Edit football"
           submitLabel="Save changes"
           onClose={() => setEditing(null)}
           onSubmit={(e) => {

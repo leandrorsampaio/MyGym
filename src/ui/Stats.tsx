@@ -54,8 +54,9 @@ export function StatTiles({ log }: { log: LogEntry[] }) {
       <Tile title="Football">
         <Row k="Matches" v={f.matches} />
         <Row k="Foot / Futsal" v={`${f.bySport.football} / ${f.bySport.futsal}`} />
+        <Row k="Training" v={f.trainings} />
         <Row k="Goals" v={`${f.totalGoals} (${f.goalsPerMatch.toFixed(1)}/m)`} />
-        <Row k="Avg" v={f.matches ? <Stars value={f.avgRating} /> : '—'} />
+        <Row k="Avg" v={f.total ? <Stars value={f.avgRating} /> : '—'} />
       </Tile>
     </div>
   );

@@ -12,7 +12,7 @@ function Record({ value, label }: { value: string; label: string }) {
 
 export function Highlights({ log }: { log: LogEntry[] }) {
   const h = highlights(log);
-  if (h.totalSessions === 0 && h.totalMatches === 0) return null;
+  if (h.totalSessions === 0 && h.totalMatches === 0 && h.totalTrainings === 0) return null;
 
   return (
     <div>
@@ -22,7 +22,10 @@ export function Highlights({ log }: { log: LogEntry[] }) {
         <Record value={String(h.bestMatchGoals)} label="Best match goals" />
         <Record value={String(h.bestWeekCount)} label="Busiest week" />
         <Record value={String(h.totalSessions)} label="Total sessions" />
-        <Record value={String(h.totalMatches)} label="Total matches" />
+        <Record
+          value={h.totalTrainings ? `${h.totalMatches}+${h.totalTrainings}` : String(h.totalMatches)}
+          label={h.totalTrainings ? 'Matches + training' : 'Total matches'}
+        />
         <Record value={String(h.totalGoals)} label="Total goals" />
       </div>
     </div>
