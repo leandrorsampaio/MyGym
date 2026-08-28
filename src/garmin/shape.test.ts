@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { shapeGarminMetrics, shapeSeries, SERIES_MAX_POINTS } from './shape';
+import { shapeGarminMetrics, shapeSeries, isThinGarmin, SERIES_MAX_POINTS } from './shape';
 import activity from './fixtures/activity.json';
 import zones from './fixtures/zones.json';
 import details from './fixtures/details.json';
@@ -97,5 +97,33 @@ describe('a summary-only fetch', () => {
     expect(out.avgHr).toBe(138);
     expect(out.hrZones).toBeUndefined();
     expect(out.series).toBeUndefined();
+  });
+});
+
+describe('isThinGarmin', () => {
+  it('is true when nothing has been fetched', () => {
+    expect(isThinGarmin(undefined)).toBe(true);
+  });
+
+  it('is true for the old Open Graph summary — that is what needs upgrading', () => {
+    expect(
+      isThinGarmin({
+        activityId: '1',
+        name: 'Timed Activity',
+        durationSec: 4816,
+        distanceM: 0,
+        fetchedAt: 'now',
+      }),
+    ).toBe(true);
+  });
+
+  it('is false once a full render has landed', () => {
+    expect(isThinGarmin(shaped)).toBe(false);
+  });
+
+  it('is false for a summary-only render, which still has real numbers', () => {
+    const summaryOnly = shapeGarminMetrics(activity, null, null, FETCHED);
+    expect(summaryOnly.hrZones).toBeUndefined();
+    expect(isThinGarmin(summaryOnly)).toBe(false);
   });
 });

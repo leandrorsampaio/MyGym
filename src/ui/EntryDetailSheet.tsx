@@ -1,5 +1,9 @@
-import type { LogEntry } from '../log/types';
+import { useEffect, useRef, useState } from 'react';
+import type { LogEntry, MatchEntry } from '../log/types';
 import { isGym, isMatchSport, sportIcon } from '../log/types';
+import { fetchGarminMetrics } from '../garmin/api';
+import { isThinGarmin } from '../garmin/shape';
+import { parseGarminActivityId } from '../garmin/parse';
 import type { Program } from '../program/schema';
 import { Sheet } from './Sheet';
 import { GarminActivity } from './GarminActivity';
@@ -35,20 +39,77 @@ function Row({ label, children }: { label: string; children: React.ReactNode }) 
   );
 }
 
-/** Read-only detail for one log entry — everything stored on it, Garmin data included. */
-export function EntryDetailSheet({
-  entry,
-  program,
-  onClose,
-  onEdit,
-}: {
+/**
+ * Read-only detail for one log entry.
+ *
+ * Split in two so the inner component can use hooks with an entry guaranteed present,
+ * and so `key` remounts it per entry — which resets the one-shot Garmin fetch below.
+ */
+export function EntryDetailSheet(props: {
   entry: LogEntry | null;
   program: Program;
   onClose: () => void;
   onEdit: (entry: LogEntry) => void;
+  onUpdate?: (entry: LogEntry) => void;
 }) {
-  if (!entry) return null;
+  if (!props.entry) return null;
+  return <EntryDetail {...props} key={props.entry.id} entry={props.entry} />;
+}
+
+/**
+ * Fetch an activity's Garmin data when the entry is opened, if we don't already have it.
+ *
+ * Opening a match is exactly the moment you want the numbers, so going and getting them
+ * is the app's job — not something to leave behind an Edit button. One attempt per open:
+ * if the server can only reach the thin fallback, retrying on every render would spend
+ * browser-rendering time to no purpose.
+ */
+function useGarminBackfill(
+  entry: LogEntry,
+  onUpdate?: (entry: LogEntry) => void,
+): { loading: boolean; error: string | null; retry: () => void } {
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const tried = useRef(false);
+
+  const match = isGym(entry) ? null : (entry as MatchEntry);
+  const activityId = parseGarminActivityId(match?.garminUrl ?? match?.garmin?.activityId ?? '');
+  const wanted = !!match && !!activityId && isThinGarmin(match.garmin);
+
+  const run = () => {
+    if (!match || !activityId || loading) return;
+    tried.current = true;
+    setLoading(true);
+    setError(null);
+    fetchGarminMetrics(activityId)
+      .then((garmin) => onUpdate?.({ ...match, garmin }))
+      .catch((err: Error) => setError(err.message))
+      .finally(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    if (wanted && !tried.current) run();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [wanted]);
+
+  return { loading, error, retry: run };
+}
+
+function EntryDetail({
+  entry,
+  program,
+  onClose,
+  onEdit,
+  onUpdate,
+}: {
+  entry: LogEntry;
+  program: Program;
+  onClose: () => void;
+  onEdit: (entry: LogEntry) => void;
+  onUpdate?: (entry: LogEntry) => void;
+}) {
   const gym = isGym(entry);
+  const { loading, error, retry } = useGarminBackfill(entry, onUpdate);
 
   return (
     <Sheet
@@ -92,12 +153,26 @@ export function EntryDetailSheet({
               {entry.garmin?.name && <span className="text-sm text-slate-400">{entry.garmin.name}</span>}
             </div>
 
-            {entry.garmin ? (
-              <GarminActivity garmin={entry.garmin} />
-            ) : (
-              <p className="text-xs text-slate-500">
-                Link saved, but the activity data hasn't been fetched yet — tap Edit and press Fetch.
-              </p>
+            {entry.garmin && <GarminActivity garmin={entry.garmin} />}
+
+            {loading && (
+              <div className="flex items-center gap-2 rounded-xl border border-line bg-surface2/40 px-3 py-3 text-sm text-slate-400">
+                <span className="h-3 w-3 animate-spin rounded-full border-2 border-slate-600 border-t-accent" />
+                Reading the activity from Garmin…
+              </div>
+            )}
+
+            {error && (
+              <div className="rounded-xl bg-red-500/10 p-3 text-xs text-red-300">
+                <div>{error}</div>
+                <button onClick={retry} className="mt-2 rounded-lg border border-red-400/40 px-2.5 py-1 text-red-200 hover:bg-red-500/10">
+                  Try again
+                </button>
+              </div>
+            )}
+
+            {!entry.garmin && !loading && !error && (
+              <p className="text-xs text-slate-500">No activity data for this one yet.</p>
             )}
 
             {entry.garminUrl && (

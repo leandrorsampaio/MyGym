@@ -212,6 +212,12 @@ export default function App() {
           setViewing(null);
           setEditing(entry);
         }}
+        onUpdate={(entry) => {
+          // Garmin data fetched on open — keep it, so it's ours and never fetched twice.
+          updateEntry(entry);
+          setViewing(entry);
+          void syncNow();
+        }}
       />
 
       {/* Edit an existing log entry (remounts per entry via key so fields pre-fill). */}

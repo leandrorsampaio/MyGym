@@ -14,6 +14,17 @@
  */
 import type { GarminHrZone, GarminMetrics, GarminSample } from '../log/types';
 
+/**
+ * True when an activity has no real data yet — either nothing was ever fetched, or all we
+ * have is the thin Open Graph summary (name / duration / distance) that the endpoint could
+ * manage before the rendering Worker existed. Opening such an entry should go and get the
+ * rest rather than leave the user to notice and press a button.
+ */
+export function isThinGarmin(g: GarminMetrics | undefined): boolean {
+  if (!g) return true;
+  return !g.hrZones?.length && !g.series?.length && g.avgHr == null;
+}
+
 /** Cap on stored series points. ~5k 1 Hz samples per match is far more than a chart needs. */
 export const SERIES_MAX_POINTS = 200;
 
