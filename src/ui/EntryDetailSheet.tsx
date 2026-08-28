@@ -2,7 +2,7 @@ import type { LogEntry } from '../log/types';
 import { isGym, isMatchSport, sportIcon } from '../log/types';
 import type { Program } from '../program/schema';
 import { Sheet } from './Sheet';
-import { formatDuration } from '../garmin/parse';
+import { GarminActivity } from './GarminActivity';
 
 /** Turn a stored rotation key back into the label the program gives it. */
 function slot3Label(program: Program, key: string): string {
@@ -86,17 +86,20 @@ export function EntryDetailSheet({
         </div>
 
         {!gym && (entry.garmin || entry.garminUrl) && (
-          <div className="space-y-2">
-            <div className="text-xs font-semibold uppercase tracking-wide text-slate-500">Garmin</div>
-            <div className="divide-y divide-line rounded-xl border border-line px-3">
-              {entry.garmin?.name && <Row label="Activity">{entry.garmin.name}</Row>}
-              {entry.garmin?.durationSec != null && (
-                <Row label="Duration">{formatDuration(entry.garmin.durationSec)}</Row>
-              )}
-              {!!entry.garmin?.distanceM && (
-                <Row label="Distance">{(entry.garmin.distanceM / 1000).toFixed(2)} km</Row>
-              )}
+          <div className="space-y-3">
+            <div className="flex items-baseline justify-between">
+              <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Garmin</span>
+              {entry.garmin?.name && <span className="text-sm text-slate-400">{entry.garmin.name}</span>}
             </div>
+
+            {entry.garmin ? (
+              <GarminActivity garmin={entry.garmin} />
+            ) : (
+              <p className="text-xs text-slate-500">
+                Link saved, but the activity data hasn't been fetched yet — tap Edit and press Fetch.
+              </p>
+            )}
+
             {entry.garminUrl && (
               <a
                 href={entry.garminUrl}
@@ -106,11 +109,6 @@ export function EntryDetailSheet({
               >
                 Open in Garmin Connect ↗
               </a>
-            )}
-            {!entry.garmin && (
-              <p className="text-xs text-slate-500">
-                Link saved, but the activity data hasn't been fetched yet — tap Edit and press Fetch.
-              </p>
             )}
           </div>
         )}

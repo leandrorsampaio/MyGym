@@ -153,9 +153,24 @@ export function LogMatchSheet({
 
           {garmin && (
             <div className="mt-2 rounded-lg bg-accent/10 p-2.5 text-sm text-accent">
-              {garmin.name ?? 'Activity'}
-              {garmin.durationSec != null && ` · ${formatDuration(garmin.durationSec)}`}
-              {!!garmin.distanceM && ` · ${(garmin.distanceM / 1000).toFixed(2)} km`}
+              <div>
+                {garmin.name ?? 'Activity'}
+                {garmin.durationSec != null && ` · ${formatDuration(garmin.durationSec)}`}
+                {!!garmin.distanceM && ` · ${(garmin.distanceM / 1000).toFixed(2)} km`}
+              </div>
+              {/* Only a full render produces these — a glance tells you which one you got. */}
+              {(garmin.avgHr != null || garmin.calories != null) && (
+                <div className="mt-0.5 text-xs text-accent/70">
+                  {[
+                    garmin.avgHr != null && `${garmin.avgHr} bpm avg`,
+                    garmin.calories != null && `${garmin.calories} cal`,
+                    garmin.hrZones?.length && 'HR zones',
+                    garmin.series?.length && 'HR curve',
+                  ]
+                    .filter(Boolean)
+                    .join(' · ')}
+                </div>
+              )}
             </div>
           )}
           {garminError && (

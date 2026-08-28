@@ -16,7 +16,10 @@
     "pages:dev": "wrangler pages dev dist --d1=DB=mygym",
     "db:migrate:local": "wrangler d1 migrations apply mygym --local",
     "db:migrate": "wrangler d1 migrations apply mygym --remote",
-    "garmin:scrape": "node scripts/garmin-scrape.mjs"
+    "garmin:scrape": "node scripts/garmin-scrape.mjs",
+    "typecheck:worker": "tsc -p workers/garmin/tsconfig.json --noEmit",
+    "deploy:garmin": "wrangler deploy -c workers/garmin/wrangler.toml",
+    "deploy": "npm run build && wrangler pages deploy dist --project-name mygym --branch main"
   },
   "dependencies": {
     "idb-keyval": "^6.2.1",
@@ -26,6 +29,7 @@
     "zustand": "^4.5.5"
   },
   "devDependencies": {
+    "@cloudflare/puppeteer": "^1.4.0",
     "@cloudflare/workers-types": "^4.20240925.0",
     "@types/node": "^22.7.4",
     "@types/react": "^18.3.11",

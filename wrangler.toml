@@ -15,3 +15,10 @@ database_id = "75aa524a-eebd-4314-b95c-1d83b3a5053e"
 ALLOWED_EMAIL = "leandro.r.sampaio@gmail.com"
 ACCESS_TEAM_DOMAIN = "leandrorsampaio.cloudflareaccess.com"
 ACCESS_AUD = "35da0344be3a7fdad472d0742ac9c01acad3fbe4da350b895561ccb3cde15f77"
+
+# The Garmin rendering Worker (workers/garmin). Pages Functions can't hold a `browser`
+# binding, so the rendering lives in its own Worker and we call it over this binding.
+# Deploy it first: npm run deploy:garmin
+[[services]]
+binding = "GARMIN"
+service = "mygym-garmin"

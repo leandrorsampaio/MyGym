@@ -25,11 +25,38 @@ const gymEntry = z.object({
   updatedAt: z.string().min(1),
 });
 
+// Everything but the id and the fetch time is optional: entries logged before we could
+// render the page carry only a name and a duration, and a device reports what it has.
 const garminMetrics = z.object({
   activityId: z.string(),
   name: z.string().optional(),
+  type: z.string().optional(),
+  startTimeLocal: z.string().optional(),
   durationSec: z.number().optional(),
+  movingDurationSec: z.number().optional(),
   distanceM: z.number().optional(),
+  steps: z.number().optional(),
+  calories: z.number().optional(),
+  restingCalories: z.number().optional(),
+  avgHr: z.number().optional(),
+  maxHr: z.number().optional(),
+  minHr: z.number().optional(),
+  aerobicTrainingEffect: z.number().optional(),
+  anaerobicTrainingEffect: z.number().optional(),
+  trainingEffectLabel: z.string().optional(),
+  aerobicTrainingEffectMessage: z.string().optional(),
+  anaerobicTrainingEffectMessage: z.string().optional(),
+  exerciseLoad: z.number().optional(),
+  moderateIntensityMinutes: z.number().optional(),
+  vigorousIntensityMinutes: z.number().optional(),
+  bodyBatteryDelta: z.number().optional(),
+  sweatLossMl: z.number().optional(),
+  hrZones: z
+    .array(z.object({ zone: z.number(), lowBpm: z.number().optional(), seconds: z.number() }))
+    .optional(),
+  series: z
+    .array(z.object({ t: z.number(), hr: z.number().optional(), bodyBattery: z.number().optional() }))
+    .optional(),
   fetchedAt: z.string(),
 });
 

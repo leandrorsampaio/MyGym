@@ -46,6 +46,19 @@ npx wrangler pages deploy dist --project-name mygym
 In **Pages → Settings → Functions → D1 bindings**, bind variable `DB` → database `mygym`
 (matches `wrangler.toml`).
 
+## 3b. Deploy the Garmin rendering Worker
+
+The activity fetch needs a real browser (see `AGENTS.md` → Garmin), which lives in its own
+Worker. Deploy it **before** the Pages app so the app's `GARMIN` service binding resolves:
+
+```bash
+npm run deploy:garmin     # wrangler deploy -c workers/garmin/wrangler.toml
+```
+
+It uses the **Browser Rendering** binding — 10 minutes of browser time per day on the Workers
+Free plan, and one activity costs ~13s. It is deliberately not routed publicly
+(`workers_dev = false`); the only way in is the service binding from `/api/garmin`.
+
 ## 4. Custom domain
 
 Pages → your project → **Custom domains** → add `mygym.lsampaio.dev`.

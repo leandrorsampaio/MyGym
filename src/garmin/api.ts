@@ -1,10 +1,12 @@
-import { nowISO } from '../lib/clock';
 import type { GarminMetrics } from '../log/types';
-import type { GarminSummary } from './parse';
 
 /**
  * Ask our own Worker to read a Garmin activity. Rejects with a message fit to show the
  * user; callers keep the pasted URL either way so a failed fetch never blocks logging.
+ *
+ * The server decides how much it can get — a full render (HR zones, training effect, the
+ * HR curve) or the thin Open Graph summary. Either way what comes back is GarminMetrics,
+ * with every field optional, so the UI just renders whatever is present.
  */
 export async function fetchGarminMetrics(activityId: string): Promise<GarminMetrics> {
   let res: Response;
@@ -21,14 +23,8 @@ export async function fetchGarminMetrics(activityId: string): Promise<GarminMetr
     throw new Error("Can't reach the server — the link is saved, fetch it later.");
   }
 
-  const data = (await res.json()) as GarminSummary & { activityId?: string; error?: string };
+  const data = (await res.json()) as GarminMetrics & { error?: string };
   if (!res.ok) throw new Error(data.error ?? `Fetch failed (${res.status}).`);
 
-  return {
-    activityId: data.activityId ?? activityId,
-    name: data.name,
-    durationSec: data.durationSec,
-    distanceM: data.distanceM,
-    fetchedAt: nowISO(),
-  };
+  return { ...data, activityId: data.activityId || activityId };
 }

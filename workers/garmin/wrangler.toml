@@ -1,0 +1,12 @@
+# The Garmin rendering Worker. Not routed publicly — the app's Pages Function reaches it
+# over a service binding, so Cloudflare Access still gates every entry point.
+name = "mygym-garmin"
+main = "src/index.ts"
+compatibility_date = "2024-09-23"
+compatibility_flags = ["nodejs_compat"]
+workers_dev = false
+
+# Browser Rendering. The Workers Free plan allows 10 minutes of browser time per day;
+# one activity costs ~15s, so normal use stays well inside it.
+[browser]
+binding = "BROWSER"

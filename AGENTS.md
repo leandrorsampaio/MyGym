@@ -80,6 +80,11 @@ src/
     api.ts                  fetch wrappers for /api/logs
     sync.ts                 syncNow() orchestration (pull→merge→push), online/startup triggers
     merge.ts                pure mergeRemote() (last-write-wins, respects tombstones) — tested
+  garmin/                 Garmin Connect activity data
+    parse.ts                URL → activity id; Open Graph fallback parsing (shared w/ Functions)
+    shape.ts                Garmin's raw DTOs → GarminMetrics (pure, tested on real payloads)
+    api.ts                  fetch wrapper for /api/garmin
+    fixtures/               real captured payloads for activity 24101714769
   lib/clock.ts            todayISO / nowISO / newId — the ONLY place UI reads the clock
   lib/youtube.ts          YouTube Shorts/watch URL → embed URL
   pwa/persist.ts          requestPersistentStorage, isStandalone, isIOS
@@ -87,8 +92,10 @@ src/
                           Log*Sheet, ConfirmDialog, Thumb, VideoModal, Stats, etc.)
 functions/
   api/logs.ts             GET (pull) / POST (upsert + soft-delete) — verifies Access JWT
+  api/garmin.ts           GET → GarminMetrics; calls the render Worker, falls back to og tags
   lib/access.ts           Cloudflare Access JWT verification (defense-in-depth)
   tsconfig.json           Workers-typed config (separate from the app's tsconfig)
+workers/garmin/           The Garmin rendering Worker (Browser Rendering; its own deploy)
 migrations/0001_init.sql  D1 `logs` table
 wrangler.toml             Pages + D1 + Access vars config
 ```
@@ -102,6 +109,7 @@ npm run dev            # Vite dev server (UI only; no backend — sync fails gra
 npm test               # Vitest (run once).  npm run test:watch for watch mode.
 npx tsc --noEmit       # Type-check the app
 npm run typecheck:functions   # Type-check the Cloudflare Functions (Workers types)
+npm run typecheck:worker      # Type-check the Garmin rendering Worker
 npm run build          # tsc --noEmit && vite build  (generates PWA service worker)
 npm run icons          # Regenerate PWA icons from public/icon.svg (needs sharp)
 
@@ -109,6 +117,8 @@ npm run icons          # Regenerate PWA icons from public/icon.svg (needs sharp)
 npm run db:migrate:local   # set up local D1
 npm run pages:dev          # serve built app + Functions + local D1 (full stack)
 npm run db:migrate         # apply migration to remote D1
+npm run deploy:garmin      # deploy the Garmin rendering Worker (do this before the app)
+npm run deploy             # build + deploy the Pages app to production
 ```
 
 ---
@@ -155,12 +165,32 @@ optional `video` (YouTube), `thumbnail` (URL or app path), `reps`, `key`.
 `GymEntry` (session A/B/C, completion complete|t1, rating 1–3, cType for C, slot3, legAppend) or
 `MatchEntry` (sport football|training|futsal, goals, rating). `training` is football played without a
 match, so it carries no scoreline (`goals` is always 0) and never counts as a "futsal week"; it *does*
-count for the 48h rule. Each has `id`, `date` (YYYY-MM-DD), `updatedAt`.
+count for the 48h rule. Each has `id`, `date` (YYYY-MM-DD), `updatedAt`. A match may also
+carry `garminUrl` + `garmin` (`GarminMetrics` — see Garmin below).
 
 ### Sync (`sync/`)
 Write-behind backup, single device → no real conflicts. Outbox = `dirty` ids + `tombstones` in the
 store. `syncNow()` pulls (merge last-write-wins) then pushes pending; fails silently offline.
 `/api/logs` upserts by id with `updated_at >= ` guard.
+
+### Garmin (`src/garmin/`, `functions/api/garmin.ts`, `workers/garmin/`)
+Paste a Garmin activity link when logging football and the app stores the full activity —
+HR zones, training effect, calories, exercise load, and a downsampled HR/body-battery curve.
+
+**Why a whole Worker for this.** Garmin's numbers are not in the activity page's HTML. The
+page is an empty shell that fetches them from `/gc-api/activity-service/...` using a session
+its own JavaScript establishes; a plain server-side fetch gets 403. So we render the public
+page with **Cloudflare Browser Rendering** and capture the JSON the page fetches for itself.
+Pages Functions cannot hold a `browser` binding, so that lives in `workers/garmin` and
+`/api/garmin` reaches it over a **service binding** — the Worker is never routed publicly
+(`workers_dev = false`), so Access still gates every entry point. If the Worker is missing or
+out of daily browser time, `/api/garmin` falls back to the Open Graph tags (name/duration/
+distance only), which is what the endpoint did before.
+
+`GarminMetrics` is deliberately a flat bag of optional scalars: a future "load over the
+season" report is then a map over the log with no reshaping. Every field is optional — older
+entries carry only name/duration, and a device reports what it has — so **render what is
+present**, never assume a field exists.
 
 ### Media
 Thumbnails: public-domain illustrations from **free-exercise-db** via jsDelivr CDN (cached offline by

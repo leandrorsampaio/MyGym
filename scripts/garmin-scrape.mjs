@@ -11,6 +11,11 @@
  *
  * The activity must be shared publicly; no Garmin credentials are used or needed.
  *
+ * NOTE: the app no longer depends on this script. Fetching now happens server-side in
+ * workers/garmin (Cloudflare Browser Rendering), and the canonical mapping from Garmin's
+ * DTOs to what we store lives in `src/garmin/shape.ts`. This stays as a local debugging
+ * aid; its `shape()` below is a simplified copy and may lag that module.
+ *
  * Usage:
  *   node scripts/garmin-scrape.mjs <url-or-id> [<url-or-id> ...]
  *   node scripts/garmin-scrape.mjs --pretty 24101714769
