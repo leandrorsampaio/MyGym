@@ -49,6 +49,13 @@ function DropZone({ label, hint, onFile }: { label: string; hint: string; onFile
 }
 
 /** Settings: swap the training program, and back up / restore the activity log. */
+/**
+ * Cloudflare Access's own logout, on the team domain. Deliberately not the same-origin
+ * `/cdn-cgi/access/logout`: that is a navigation our service worker would answer from the
+ * precache, so the sign-out would never reach Access at all.
+ */
+const ACCESS_LOGOUT_URL = 'https://leandrorsampaio.cloudflareaccess.com/cdn-cgi/access/logout';
+
 export function ProgramSheet({ open, onClose }: { open: boolean; onClose: () => void }) {
   const program = useStore((s) => s.program);
   const loadProgram = useStore((s) => s.loadProgram);
@@ -158,6 +165,34 @@ export function ProgramSheet({ open, onClose }: { open: boolean; onClose: () => 
             </pre>
           )}
           {logOk && <div className="rounded-lg bg-accent/10 p-3 text-sm text-accent">{logOk}</div>}
+        </section>
+
+        {/*
+          There is no app-level account — Cloudflare Access is the whole of the auth — so
+          these are links into Access itself, on its own domain where no service worker can
+          intercept them. Sign in is the way out of a lapsed session: while it is lapsed the
+          worker cannot fetch a new /sw.js, so the app quietly stops updating.
+        */}
+        <section className="space-y-2 border-t border-line pt-4">
+          <div className="text-xs font-semibold uppercase tracking-widest text-slate-500">Session</div>
+          <div className="flex gap-2">
+            <a
+              href="/signin"
+              className="flex-1 rounded-lg border border-line py-2 text-center text-sm text-accent hover:border-slate-500 hover:bg-surface2"
+            >
+              Sign in again
+            </a>
+            <a
+              href={ACCESS_LOGOUT_URL}
+              className="flex-1 rounded-lg border border-line py-2 text-center text-sm text-slate-400 hover:border-slate-500 hover:bg-surface2"
+            >
+              Log out
+            </a>
+          </div>
+          <p className="text-xs text-slate-600">
+            Signing in again is also the fix if the app seems stuck on an old version: an expired
+            session blocks the update check.
+          </p>
         </section>
       </div>
     </Sheet>

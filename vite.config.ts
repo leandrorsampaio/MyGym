@@ -28,10 +28,10 @@ export default defineConfig({
         globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2}'],
         // SPA: serve the cached shell for any navigation when offline.
         navigateFallback: '/index.html',
-        // ...except /signin, which MUST reach the network so Cloudflare Access can
-        // challenge for a fresh session. Served from cache it would be a no-op — and
-        // /api/*, where the shell would otherwise be served in place of the endpoint.
-        navigateFallbackDenylist: [/^\/signin/, /^\/api\//],
+        // ...except paths that must reach the network: /signin, so Cloudflare Access can
+        // challenge for a fresh session; /api/*, where the shell would otherwise be served
+        // in place of the endpoint; and /cdn-cgi/*, which is Access's own login and logout.
+        navigateFallbackDenylist: [/^\/signin/, /^\/api\//, /^\/cdn-cgi\//],
         runtimeCaching: [
           {
             // Exercise thumbnails (user-supplied image URLs) → cache on first view.
