@@ -96,7 +96,18 @@ export interface GarminMetrics {
   fetchedAt: string;
 }
 
-export interface GymEntry {
+/**
+ * What any entry carries once it was also recorded on the watch. Both a gym session and
+ * a match can be: the link is pasted when logging, and the numbers are fetched from it.
+ */
+export interface GarminLinked {
+  /** Garmin Connect activity this was recorded with. Pasted when logging. */
+  garminUrl?: string;
+  /** What we read off that activity. Absent until a fetch succeeds. */
+  garmin?: GarminMetrics;
+}
+
+export interface GymEntry extends GarminLinked {
   id: string;
   kind: 'gym';
   /** Calendar date 'YYYY-MM-DD'. */
@@ -113,7 +124,7 @@ export interface GymEntry {
   updatedAt: string;
 }
 
-export interface MatchEntry {
+export interface MatchEntry extends GarminLinked {
   id: string;
   kind: 'match';
   date: string;
@@ -121,10 +132,6 @@ export interface MatchEntry {
   /** Goals scored. Always 0 for `training`, which has no scoreline. */
   goals: number;
   rating: Rating;
-  /** Garmin Connect activity this match was recorded with. Pasted when logging. */
-  garminUrl?: string;
-  /** What we read off that activity. Absent until a fetch succeeds. */
-  garmin?: GarminMetrics;
   updatedAt: string;
 }
 

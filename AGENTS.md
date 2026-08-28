@@ -170,8 +170,9 @@ optional `video` (YouTube), `thumbnail` (URL or app path), `reps`, `key`.
 `GymEntry` (session A/B/C, completion complete|t1, rating 1–3, cType for C, slot3, legAppend) or
 `MatchEntry` (sport football|training|futsal, goals, rating). `training` is football played without a
 match, so it carries no scoreline (`goals` is always 0) and never counts as a "futsal week"; it *does*
-count for the 48h rule. Each has `id`, `date` (YYYY-MM-DD), `updatedAt`. A match may also
-carry `garminUrl` + `garmin` (`GarminMetrics` — see Garmin below).
+count for the 48h rule. Each has `id`, `date` (YYYY-MM-DD), `updatedAt`. **Either kind** may
+also carry `garminUrl` + `garmin` (`GarminLinked` / `GarminMetrics` — see Garmin below), so
+gym sessions and football both contribute to training load.
 
 ### Sync (`sync/`)
 Write-behind backup, single device → no real conflicts. Outbox = `dirty` ids + `tombstones` in the

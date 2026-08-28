@@ -12,19 +12,6 @@ import { SPORTS, type LogEntry } from './types';
 const rating = z.union([z.literal(1), z.literal(2), z.literal(3)]);
 const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'expected a YYYY-MM-DD date');
 
-const gymEntry = z.object({
-  id: z.string().min(1),
-  kind: z.literal('gym'),
-  date: isoDate,
-  session: z.enum(['A', 'B', 'C']),
-  completion: z.enum(['complete', 't1']),
-  rating,
-  cType: z.string().optional(),
-  slot3: z.string().optional(),
-  legAppend: z.boolean().optional(),
-  updatedAt: z.string().min(1),
-});
-
 // Everything but the id and the fetch time is optional: entries logged before we could
 // render the page carry only a name and a duration, and a device reports what it has.
 const garminMetrics = z.object({
@@ -59,6 +46,23 @@ const garminMetrics = z.object({
     .optional(),
   fetchedAt: z.string(),
 });
+
+const gymEntry = z.object({
+  id: z.string().min(1),
+  kind: z.literal('gym'),
+  date: isoDate,
+  session: z.enum(['A', 'B', 'C']),
+  completion: z.enum(['complete', 't1']),
+  rating,
+  cType: z.string().optional(),
+  slot3: z.string().optional(),
+  legAppend: z.boolean().optional(),
+  garminUrl: z.string().optional(),
+  garmin: garminMetrics.optional(),
+  updatedAt: z.string().min(1),
+});
+
+
 
 const matchEntry = z.object({
   id: z.string().min(1),

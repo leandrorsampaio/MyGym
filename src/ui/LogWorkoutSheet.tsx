@@ -1,8 +1,9 @@
 import { useState } from 'react';
 import type { Program } from '../program/schema';
-import type { Completion, GymEntry, Rating, SessionId } from '../log/types';
+import type { Completion, GarminMetrics, GymEntry, Rating, SessionId } from '../log/types';
 import { Sheet } from './Sheet';
 import { StarRating } from './StarRating';
+import { GarminField } from './GarminField';
 import { todayISO } from '../lib/clock';
 
 type GymFields = Omit<GymEntry, 'id' | 'kind' | 'updatedAt'>;
@@ -40,6 +41,8 @@ export function LogWorkoutSheet({
   // Auto-recorded from the recommendation so the rotation advances; not asked in the UI.
   const [slot3] = useState(initial?.slot3 ?? defaultSlot3);
   const [legAppend, setLegAppend] = useState(initial?.legAppend ?? !!defaultLegAppend);
+  const [garminUrl, setGarminUrl] = useState(initial?.garminUrl ?? '');
+  const [garmin, setGarmin] = useState<GarminMetrics | undefined>(initial?.garmin);
 
   const submit = () => {
     onSubmit({
@@ -48,6 +51,9 @@ export function LogWorkoutSheet({
       completion,
       rating,
       slot3,
+      // Always send both keys so clearing the field clears them on an edit too.
+      garminUrl: garminUrl.trim() || undefined,
+      garmin,
       ...(session === 'C' ? { cType, legAppend } : {}),
     });
     onClose();
@@ -109,6 +115,15 @@ export function LogWorkoutSheet({
         <Field label="How did it go?">
           <StarRating value={rating} onChange={setRating} />
         </Field>
+
+        <GarminField
+          url={garminUrl}
+          garmin={garmin}
+          onChange={(u, g) => {
+            setGarminUrl(u);
+            setGarmin(g);
+          }}
+        />
 
         <button
           onClick={submit}

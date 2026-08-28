@@ -4,8 +4,7 @@ import { SPORTS, isMatchSport } from '../log/types';
 import { Sheet } from './Sheet';
 import { StarRating } from './StarRating';
 import { todayISO } from '../lib/clock';
-import { fetchGarminMetrics } from '../garmin/api';
-import { formatDuration, parseGarminActivityId } from '../garmin/parse';
+import { GarminField } from './GarminField';
 
 type MatchFields = Omit<MatchEntry, 'id' | 'kind' | 'updatedAt'>;
 
@@ -30,25 +29,6 @@ export function LogMatchSheet({
   const [rating, setRating] = useState<Rating>(initial?.rating ?? 2);
   const [garminUrl, setGarminUrl] = useState(initial?.garminUrl ?? '');
   const [garmin, setGarmin] = useState<GarminMetrics | undefined>(initial?.garmin);
-  const [fetching, setFetching] = useState(false);
-  const [garminError, setGarminError] = useState<string | null>(null);
-
-  const activityId = parseGarminActivityId(garminUrl);
-
-  const pullGarmin = async () => {
-    if (!activityId || fetching) return;
-    setFetching(true);
-    setGarminError(null);
-    try {
-      setGarmin(await fetchGarminMetrics(activityId));
-    } catch (err) {
-      setGarmin(undefined);
-      setGarminError((err as Error).message);
-    } finally {
-      setFetching(false);
-    }
-  };
-
   // Training has no scoreline, so it always stores 0 — but keep the typed value in state
   // so toggling back to football/futsal restores what was entered.
   const scored = isMatchSport(sport);
@@ -119,69 +99,14 @@ export function LogMatchSheet({
           <StarRating value={rating} onChange={setRating} />
         </div>
 
-        <div>
-          <div className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-slate-500">
-            Garmin activity <span className="font-normal normal-case text-slate-600">· optional</span>
-          </div>
-          <div className="flex gap-2">
-            <input
-              type="url"
-              inputMode="url"
-              autoCapitalize="off"
-              autoCorrect="off"
-              spellCheck={false}
-              placeholder="Paste Garmin Connect link"
-              value={garminUrl}
-              onChange={(e) => {
-                setGarminUrl(e.target.value);
-                setGarmin(undefined);
-                setGarminError(null);
-              }}
-              onBlur={() => {
-                if (!garmin) void pullGarmin();
-              }}
-              className="min-w-0 flex-1 rounded-lg border border-line bg-surface2 px-3 py-2 text-sm"
-            />
-            <button
-              onClick={() => void pullGarmin()}
-              disabled={!activityId || fetching}
-              className="shrink-0 rounded-lg border border-line px-3 py-2 text-sm text-accent hover:border-slate-500 disabled:opacity-40"
-            >
-              {fetching ? '…' : 'Fetch'}
-            </button>
-          </div>
-
-          {garmin && (
-            <div className="mt-2 rounded-lg bg-accent/10 p-2.5 text-sm text-accent">
-              <div>
-                {garmin.name ?? 'Activity'}
-                {garmin.durationSec != null && ` · ${formatDuration(garmin.durationSec)}`}
-                {!!garmin.distanceM && ` · ${(garmin.distanceM / 1000).toFixed(2)} km`}
-              </div>
-              {/* Only a full render produces these — a glance tells you which one you got. */}
-              {(garmin.avgHr != null || garmin.calories != null) && (
-                <div className="mt-0.5 text-xs text-accent/70">
-                  {[
-                    garmin.avgHr != null && `${garmin.avgHr} bpm avg`,
-                    garmin.calories != null && `${garmin.calories} cal`,
-                    garmin.hrZones?.length && 'HR zones',
-                    garmin.series?.length && 'HR curve',
-                  ]
-                    .filter(Boolean)
-                    .join(' · ')}
-                </div>
-              )}
-            </div>
-          )}
-          {garminError && (
-            <div className="mt-2 rounded-lg bg-red-500/10 p-2.5 text-xs text-red-300">{garminError}</div>
-          )}
-          {garminUrl.trim() && !activityId && !garminError && (
-            <div className="mt-2 text-xs text-slate-500">
-              Expecting a link like connect.garmin.com/app/activity/…
-            </div>
-          )}
-        </div>
+        <GarminField
+          url={garminUrl}
+          garmin={garmin}
+          onChange={(u, g) => {
+            setGarminUrl(u);
+            setGarmin(g);
+          }}
+        />
 
         <button
           onClick={submit}

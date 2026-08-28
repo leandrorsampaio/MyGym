@@ -77,3 +77,23 @@ describe('training entries', () => {
     expect(parsed).toHaveProperty('error');
   });
 });
+
+describe('a gym session with Garmin data', () => {
+  const gymWithGarmin: LogEntry = {
+    id: 'g9', kind: 'gym', date: '2026-08-27', session: 'B',
+    completion: 'complete', rating: 3, slot3: 'side',
+    garminUrl: 'https://connect.garmin.com/app/activity/24101714769',
+    garmin: {
+      activityId: '24101714769', name: 'Strength', avgHr: 118, maxHr: 152, calories: 402,
+      exerciseLoad: 88, hrZones: [{ zone: 1, lowBpm: 91, seconds: 600 }],
+      series: [{ t: 0, hr: 95 }, { t: 30, hr: 118 }],
+      fetchedAt: '2026-08-27T19:00:00.000Z',
+    },
+    updatedAt: '2026-08-27T18:00:00.000Z',
+  };
+
+  it('round-trips through a backup', () => {
+    const b = buildBackup([gymWithGarmin], '2026-08-27T22:00:00.000Z');
+    expect(parseBackup(JSON.parse(JSON.stringify(b)))).toEqual({ entries: [gymWithGarmin] });
+  });
+});

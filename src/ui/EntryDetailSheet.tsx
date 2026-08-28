@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
-import type { LogEntry, MatchEntry } from '../log/types';
+import type { LogEntry } from '../log/types';
 import { isGym, isMatchSport, sportIcon } from '../log/types';
 import { fetchGarminMetrics } from '../garmin/api';
 import { isThinGarmin } from '../garmin/shape';
@@ -72,17 +72,16 @@ function useGarminBackfill(
   const [error, setError] = useState<string | null>(null);
   const tried = useRef(false);
 
-  const match = isGym(entry) ? null : (entry as MatchEntry);
-  const activityId = parseGarminActivityId(match?.garminUrl ?? match?.garmin?.activityId ?? '');
-  const wanted = !!match && !!activityId && isThinGarmin(match.garmin);
+  const activityId = parseGarminActivityId(entry.garminUrl ?? entry.garmin?.activityId ?? '');
+  const wanted = !!activityId && isThinGarmin(entry.garmin);
 
   const run = () => {
-    if (!match || !activityId || loading) return;
+    if (!activityId || loading) return;
     tried.current = true;
     setLoading(true);
     setError(null);
     fetchGarminMetrics(activityId)
-      .then((garmin) => onUpdate?.({ ...match, garmin }))
+      .then((garmin) => onUpdate?.({ ...entry, garmin }))
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false));
   };
@@ -146,7 +145,7 @@ function EntryDetail({
           </Row>
         </div>
 
-        {!gym && (entry.garmin || entry.garminUrl) && (
+        {(entry.garmin || entry.garminUrl) && (
           <div className="space-y-3">
             <div className="flex items-baseline justify-between">
               <span className="text-xs font-semibold uppercase tracking-wide text-slate-500">Garmin</span>
