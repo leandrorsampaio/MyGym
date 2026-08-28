@@ -74,7 +74,7 @@ export function LogMatchSheet({
             <button
               key={s}
               onClick={() => setSport(s)}
-              className={`rounded-lg border py-2 font-medium capitalize ${
+              className={`rounded-lg border py-2 font-medium capitalize hover:border-slate-500 ${
                 sport === s ? 'border-accent text-accent' : 'border-line text-slate-300'
               }`}
             >
@@ -145,7 +145,7 @@ export function LogMatchSheet({
             <button
               onClick={() => void pullGarmin()}
               disabled={!activityId || fetching}
-              className="shrink-0 rounded-lg border border-line px-3 py-2 text-sm text-accent disabled:opacity-40"
+              className="shrink-0 rounded-lg border border-line px-3 py-2 text-sm text-accent hover:border-slate-500 disabled:opacity-40"
             >
               {fetching ? '…' : 'Fetch'}
             </button>
@@ -168,7 +168,10 @@ export function LogMatchSheet({
           )}
         </div>
 
-        <button onClick={submit} className="w-full rounded-xl bg-accent py-3 font-semibold text-bg active:bg-accentDim">
+        <button
+          onClick={submit}
+          className="w-full rounded-xl bg-accent py-3 font-semibold text-bg hover:bg-accentDim active:bg-accentDim"
+        >
           {submitLabel}
         </button>
       </div>

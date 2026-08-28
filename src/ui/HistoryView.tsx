@@ -50,9 +50,9 @@ export function HistoryView({
   }, [log]);
 
   return (
-    <div className="pb-10">
+    <div className="pb-10 md:mx-auto md:max-w-3xl">
       <div className="flex items-center justify-between py-1">
-        <button onClick={onBack} className="text-sm text-slate-400">
+        <button onClick={onBack} className="text-sm text-slate-400 hover:text-slate-100">
           ← Home
         </button>
         <span className="text-sm text-slate-500">{log.length} entries</span>
@@ -70,7 +70,7 @@ export function HistoryView({
             {group.entries.map((e, i) => (
               <div
                 key={e.id}
-                className={`flex items-center gap-3 bg-surface px-3 py-2.5 ${
+                className={`flex items-center gap-3 bg-surface px-3 py-2.5 hover:bg-surface2 ${
                   i > 0 ? 'border-t border-line' : ''
                 }`}
               >
@@ -103,14 +103,14 @@ export function HistoryView({
                 <button
                   onClick={() => onEdit(e)}
                   aria-label="Edit entry"
-                  className="px-1 text-slate-500 active:text-accent"
+                  className="px-1 text-slate-500 hover:text-accent active:text-accent"
                 >
                   ✏️
                 </button>
                 <button
                   onClick={() => setPendingDelete(e)}
                   aria-label="Delete entry"
-                  className="px-1 text-slate-600 active:text-red-400"
+                  className="px-1 text-slate-600 hover:text-red-400 active:text-red-400"
                 >
                   🗑
                 </button>

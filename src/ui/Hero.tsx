@@ -41,7 +41,7 @@ export function Hero({
 
       <button
         onClick={() => onStart(rec.nextSession)}
-        className="mt-4 w-full rounded-xl bg-accent py-3 text-center font-semibold text-bg active:bg-accentDim"
+        className="mt-4 w-full rounded-xl bg-accent py-3 text-center font-semibold text-bg hover:bg-accentDim active:bg-accentDim"
       >
         Start Session {SESSION_LABELS[rec.nextSession]}
       </button>
@@ -74,7 +74,7 @@ export function Hero({
             <button
               key={s}
               onClick={() => setConfirmSession(s)}
-              className={`rounded-xl border py-2 font-medium ${
+              className={`rounded-xl border py-2 font-medium hover:border-slate-500 ${
                 s === rec.nextSession ? 'border-accent text-accent' : 'border-line text-slate-300'
               }`}
             >

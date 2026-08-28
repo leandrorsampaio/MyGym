@@ -102,7 +102,7 @@ export function EntryDetailSheet({
                 href={entry.garminUrl}
                 target="_blank"
                 rel="noreferrer"
-                className="block rounded-lg border border-line py-2.5 text-center text-sm text-accent"
+                className="block rounded-lg border border-line py-2.5 text-center text-sm text-accent hover:border-slate-500 hover:bg-surface2"
               >
                 Open in Garmin Connect ↗
               </a>
@@ -117,7 +117,7 @@ export function EntryDetailSheet({
 
         <button
           onClick={() => onEdit(entry)}
-          className="w-full rounded-xl bg-accent py-3 font-semibold text-bg active:bg-accentDim"
+          className="w-full rounded-xl bg-accent py-3 font-semibold text-bg hover:bg-accentDim active:bg-accentDim"
         >
           Edit
         </button>

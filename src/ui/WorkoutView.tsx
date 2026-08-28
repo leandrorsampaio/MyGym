@@ -37,9 +37,9 @@ export function WorkoutView({
   const keepTier = (tier: 'T1' | 'T2') => !t1Only || tier === 'T1';
 
   return (
-    <div className="pb-28">
+    <div className="pb-28 md:mx-auto md:max-w-2xl">
       <div className="flex items-center justify-between">
-        <button onClick={onBack} className="text-sm text-slate-400">
+        <button onClick={onBack} className="text-sm text-slate-400 hover:text-slate-100">
           ← Home
         </button>
         <label className="flex items-center gap-2 text-sm text-slate-300">
@@ -153,7 +153,7 @@ export function WorkoutView({
       <div className="safe-bottom fixed inset-x-0 bottom-0 border-t border-line bg-bg/90 p-3 backdrop-blur">
         <button
           onClick={onFinish}
-          className="mx-auto block w-full max-w-md rounded-xl bg-accent py-3 font-semibold text-bg active:bg-accentDim"
+          className="mx-auto block w-full max-w-md rounded-xl bg-accent py-3 font-semibold text-bg hover:bg-accentDim active:bg-accentDim"
         >
           I finished the training
         </button>

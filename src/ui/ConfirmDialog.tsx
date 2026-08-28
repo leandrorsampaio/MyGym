@@ -37,13 +37,16 @@ export function ConfirmDialog({
         <h3 className="text-lg font-semibold text-slate-100">{title}</h3>
         {message && <p className="mt-2 text-sm text-slate-400">{message}</p>}
         <div className="mt-5 grid grid-cols-2 gap-2">
-          <button onClick={onCancel} className="rounded-xl border border-line py-2.5 font-medium text-slate-300">
+          <button
+            onClick={onCancel}
+            className="rounded-xl border border-line py-2.5 font-medium text-slate-300 hover:border-slate-500 hover:bg-surface2"
+          >
             {cancelLabel}
           </button>
           <button
             onClick={onConfirm}
             className={`rounded-xl py-2.5 font-semibold ${
-              danger ? 'bg-red-500 text-white' : 'bg-accent text-bg'
+              danger ? 'bg-red-500 text-white hover:bg-red-600' : 'bg-accent text-bg hover:bg-accentDim'
             }`}
           >
             {confirmLabel}

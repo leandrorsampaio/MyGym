@@ -71,7 +71,7 @@ export function LogWorkoutSheet({
               <button
                 key={c}
                 onClick={() => setCompletion(c)}
-                className={`rounded-lg border py-2 font-medium ${
+                className={`rounded-lg border py-2 font-medium hover:border-slate-500 ${
                   completion === c ? 'border-accent text-accent' : 'border-line text-slate-300'
                 }`}
               >
@@ -88,7 +88,7 @@ export function LogWorkoutSheet({
                 <button
                   key={a.key}
                   onClick={() => setCType(a.key)}
-                  className={`rounded-lg border py-2 text-sm ${
+                  className={`rounded-lg border py-2 text-sm hover:border-slate-500 ${
                     cType === a.key ? 'border-accent text-accent' : 'border-line text-slate-300'
                   }`}
                 >
@@ -110,7 +110,10 @@ export function LogWorkoutSheet({
           <StarRating value={rating} onChange={setRating} />
         </Field>
 
-        <button onClick={submit} className="w-full rounded-xl bg-accent py-3 font-semibold text-bg active:bg-accentDim">
+        <button
+          onClick={submit}
+          className="w-full rounded-xl bg-accent py-3 font-semibold text-bg hover:bg-accentDim active:bg-accentDim"
+        >
           {submitLabel}
         </button>
       </div>

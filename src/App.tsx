@@ -77,7 +77,7 @@ export default function App() {
   }
 
   return (
-    <div className="safe-top mx-auto min-h-full max-w-md px-4 pb-10">
+    <div className="safe-top mx-auto min-h-full max-w-md px-4 pb-10 md:max-w-5xl md:px-6">
       <header className="flex items-center justify-between py-4">
         <h1 className="text-xl font-bold tracking-tight">
           My<span className="text-accent">Gym</span>
@@ -86,13 +86,17 @@ export default function App() {
           {pending > 0 && (
             <button
               onClick={() => void syncNow()}
-              className="rounded-full bg-surface2 px-2 py-1 text-xs text-slate-400"
+              className="rounded-full bg-surface2 px-2 py-1 text-xs text-slate-400 hover:text-slate-100"
               title="Tap to sync now"
             >
               ☁ {pending} unsynced
             </button>
           )}
-          <button onClick={() => setProgramOpen(true)} aria-label="Program settings" className="text-xl text-slate-400">
+          <button
+            onClick={() => setProgramOpen(true)}
+            aria-label="Program settings"
+            className="text-xl text-slate-400 hover:text-slate-100"
+          >
             ⚙
           </button>
         </div>
@@ -112,26 +116,38 @@ export default function App() {
 
       {view === 'home' ? (
         <div className="space-y-4">
+          {/* Outside the grid: it renders on iPad too, where it would otherwise
+              take a column cell and push the layout out of place. */}
           <InstallHint />
-          <Hero program={program} rec={rec} onStart={start} />
-          <button
-            onClick={() => setMatchOpen(true)}
-            className="w-full rounded-xl border border-line bg-surface py-3 font-medium text-slate-200"
-          >
-            ⚽ I played — log it
-          </button>
-          <LastActivity log={log} today={today} />
-          <ConsistencyChips log={log} today={today} />
-          <Heatmap log={log} today={today} />
-          <SessionBreakdown log={log} />
-          <Highlights log={log} />
-          <StatTiles log={log} />
+          <div className="space-y-4 md:grid md:grid-cols-2 md:items-start md:gap-4 md:space-y-0">
+            {/* What to do now. */}
+            <div className="space-y-4">
+              <Hero program={program} rec={rec} onStart={start} />
+              <button
+                onClick={() => setMatchOpen(true)}
+                className="w-full rounded-xl border border-line bg-surface py-3 font-medium text-slate-200 hover:border-slate-500 hover:bg-surface2"
+              >
+                ⚽ I played — log it
+              </button>
+              <LastActivity log={log} today={today} />
+              <ConsistencyChips log={log} today={today} />
+            </div>
+            {/* How it's going. */}
+            <div className="space-y-4">
+              <Heatmap log={log} today={today} />
+              <SessionBreakdown log={log} />
+              <Highlights log={log} />
+              <StatTiles log={log} />
+            </div>
+          </div>
+          {/* Below the grid, so on a phone this stays where it always was: the last
+              thing on the page, after the stats. */}
           <button
             onClick={() => {
               setView('history');
               window.scrollTo(0, 0);
             }}
-            className="w-full rounded-xl border border-line bg-surface py-3 font-medium text-slate-200"
+            className="w-full rounded-xl border border-line bg-surface py-3 font-medium text-slate-200 hover:border-slate-500 hover:bg-surface2"
           >
             📋 View all activity ({log.length})
           </button>
