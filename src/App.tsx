@@ -13,7 +13,7 @@ import { LastActivity } from './ui/LastActivity';
 import { Heatmap } from './ui/Heatmap';
 import { ReviewView } from './ui/ReviewView';
 import { HistoryView } from './ui/HistoryView';
-import { WorkoutView } from './ui/WorkoutView';
+import { WorkoutView, type Optional } from './ui/WorkoutView';
 import { VideoModal } from './ui/VideoModal';
 import { LogWorkoutSheet } from './ui/LogWorkoutSheet';
 import { LogMatchSheet } from './ui/LogMatchSheet';
@@ -50,6 +50,8 @@ export default function App() {
 
   const [view, setView] = useState<View>('train');
   const [activeSession, setActiveSession] = useState<SessionId>(rec.nextSession);
+  // The one thing a running session tracks: whether the optional tier is in.
+  const [optional, setOptional] = useState<Optional>('undecided');
   const [video, setVideo] = useState<{ url: string; title: string } | null>(null);
   const [finishOpen, setFinishOpen] = useState(false);
   const [matchOpen, setMatchOpen] = useState(false);
@@ -64,6 +66,7 @@ export default function App() {
 
   const start = (s: SessionId) => {
     setActiveSession(s);
+    setOptional('undecided');
     go('workout');
   };
 
@@ -160,6 +163,8 @@ export default function App() {
           cType={cType}
           slot3Next={slot3Next}
           legAppend={legAppend}
+          optional={optional}
+          onOptional={setOptional}
           onPlay={(url, title) => setVideo({ url, title })}
           onBack={() => go('train')}
           onFinish={() => setFinishOpen(true)}
@@ -169,12 +174,17 @@ export default function App() {
       {video && <VideoModal url={video.url} title={video.title} onClose={() => setVideo(null)} />}
 
       <LogWorkoutSheet
+        /* Remount when the tier decision changes: the sheet reads defaultCompletion into
+           useState, which only runs on mount, so without this it keeps the preselection
+           from whenever it first rendered. */
+        key={`finish-${optional}`}
         open={finishOpen}
         program={program}
         session={activeSession}
         defaultCType={cType}
         defaultSlot3={slot3Next}
         defaultLegAppend={legAppend}
+        defaultCompletion={optional === 'added' ? 'complete' : 't1'}
         onClose={() => setFinishOpen(false)}
         onSubmit={(e) => {
           addGym(e);

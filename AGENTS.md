@@ -93,7 +93,7 @@ src/
   lib/youtube.ts          YouTube Shorts/watch URL → embed URL
   pwa/persist.ts          requestPersistentStorage, isStandalone, isIOS
   ui/                     Components (Hero, WorkoutView, ExerciseItem, Heatmap, HistoryView,
-                          Log*Sheet, ConfirmDialog, Thumb, VideoModal, Stats, etc.)
+                          ReviewView, Chart, Log*Sheet, ConfirmDialog, Thumb, VideoModal, etc.)
 functions/
   api/logs.ts             GET (pull) / POST (upsert + soft-delete) — verifies Access JWT
   api/garmin.ts           GET → GarminMetrics; calls the render Worker, falls back to og tags
@@ -202,6 +202,18 @@ distance only), which is what the endpoint did before.
 season" report is then a map over the log with no reshaping. Every field is optional — older
 entries carry only name/duration, and a device reports what it has — so **render what is
 present**, never assume a field exists.
+
+### The running session (`ui/WorkoutView.tsx`)
+The screen with the most use and the least room for cleverness. It tracks exactly **one**
+thing: whether the optional (T2) tier is in — `'undecided' | 'added' | 'skipped'`, held in
+`App` so the finish sheet can preselect `completion` from it. T2 items are hidden until
+asked for, wherever they sit in the session, so the list is never a checklist you failed.
+
+Do not add per-exercise ticking: it costs taps mid-session and produces data nothing reads.
+Do not add a rest timer — rest is text beside the prescription, and the watch already does
+it. The prescription is the largest thing on each card on purpose; it is read at arm's
+length from a bench. The session map is a map, not a progress bar — we do not know how far
+through you are, and showing a filling bar would claim we do.
 
 ### Media
 Thumbnails: public-domain illustrations from **free-exercise-db** via jsDelivr CDN (cached offline by

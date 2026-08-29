@@ -15,6 +15,7 @@ export function LogWorkoutSheet({
   defaultCType,
   defaultSlot3,
   defaultLegAppend,
+  defaultCompletion,
   initial,
   title,
   submitLabel = 'Log workout',
@@ -27,6 +28,9 @@ export function LogWorkoutSheet({
   defaultCType?: string;
   defaultSlot3: string;
   defaultLegAppend?: boolean;
+  /** Preselected from the tier decision made during the session. Still editable — real
+   *  sessions are messier than the UI's idea of them. */
+  defaultCompletion?: Completion;
   /** Pre-fill for edit mode. */
   initial?: Partial<GymFields>;
   title?: string;
@@ -35,7 +39,9 @@ export function LogWorkoutSheet({
   onSubmit: (e: GymFields) => void;
 }) {
   const [date, setDate] = useState(initial?.date ?? todayISO());
-  const [completion, setCompletion] = useState<Completion>(initial?.completion ?? 'complete');
+  const [completion, setCompletion] = useState<Completion>(
+    initial?.completion ?? defaultCompletion ?? 'complete',
+  );
   const [rating, setRating] = useState<Rating>(initial?.rating ?? 2);
   const [cType, setCType] = useState(initial?.cType ?? defaultCType ?? program.workouts.C.alternates[0]?.key);
   // Auto-recorded from the recommendation so the rotation advances; not asked in the UI.
