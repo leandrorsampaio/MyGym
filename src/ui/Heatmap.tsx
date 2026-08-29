@@ -24,15 +24,39 @@ function cellClass(d: HeatDay): string {
   return 'bg-surface2';
 }
 
-export function Heatmap({ log, today }: { log: LogEntry[]; today: string }) {
+/**
+ * `compact` is the version that sits at the bottom of Train: a fixed 16-week window with
+ * no period buttons, so the overview is there before you start without competing with the
+ * decision above it. 16 rather than 12 because at 12 the cells grow large enough to read
+ * as a block of colour rather than a rhythm.
+ */
+export function Heatmap({
+  log,
+  today,
+  compact = false,
+  onOpenAll,
+}: {
+  log: LogEntry[];
+  today: string;
+  compact?: boolean;
+  onOpenAll?: () => void;
+}) {
   const [periodKey, setPeriodKey] = useState<(typeof PERIODS)[number]['key']>('12w');
   const period = PERIODS.find((p) => p.key === periodKey)!;
-  const grid = buildHeatmap(log, today, period.weeks);
+  const grid = buildHeatmap(log, today, compact ? 16 : period.weeks);
 
   return (
-    <div className="rounded-2xl border border-line bg-surface p-4">
+    <div className={compact ? '' : 'rounded-2xl border border-line bg-surface p-4'}>
       <div className="mb-2 flex items-center justify-between">
-        <span className="text-xs font-semibold uppercase tracking-widest text-slate-500">{period.title}</span>
+        <span className="text-xs font-semibold uppercase tracking-widest text-slate-500">
+          {compact ? 'Last 16 weeks' : period.title}
+        </span>
+        {compact && onOpenAll && (
+          <button onClick={onOpenAll} className="text-xs text-slate-500 hover:text-slate-200">
+            All activity ›
+          </button>
+        )}
+        {!compact && (
         <div className="flex rounded-lg border border-line p-0.5 text-[11px]">
           {PERIODS.map((p) => (
             <button
@@ -46,6 +70,7 @@ export function Heatmap({ log, today }: { log: LogEntry[]; today: string }) {
             </button>
           ))}
         </div>
+        )}
       </div>
 
       <div className="mb-2 flex items-center gap-3 text-[11px] text-slate-500">

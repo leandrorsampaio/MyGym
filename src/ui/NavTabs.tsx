@@ -9,9 +9,9 @@ import type { View } from '../views';
  * mid-session you want the session, not navigation.
  */
 export const TABS: { view: View; label: string; icon: string }[] = [
-  { view: 'today', label: 'Today', icon: '🏠' },
-  { view: 'log', label: 'Log', icon: '📋' },
-  { view: 'progress', label: 'Progress', icon: '📈' },
+  { view: 'train', label: 'Train', icon: '🏋️' },
+  { view: 'history', label: 'History', icon: '📋' },
+  { view: 'review', label: 'Review', icon: '📈' },
 ];
 
 export function BottomNav({ view, onGo }: { view: View; onGo: (v: View) => void }) {

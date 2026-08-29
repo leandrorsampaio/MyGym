@@ -140,10 +140,12 @@ npm run deploy             # build + deploy the Pages app to production
    if you change program data, the built-in path picks it up automatically on reload (no migration needed).
 4. **Rotation is derived from the log**, not stored. Don't add rotation counters.
 5. **Single page, no router.** Views are state (`views.ts` → `App.tsx`), never routes. Three
-   nav destinations — **Today** (the daily coach: next session + logging), **Log** (heatmap +
-   history, opening into entry detail), **Progress** (the dashboard) — plus `workout`, a
-   focused mode entered from Today that hides the nav. Put a new block on the page whose job
-   it serves; do not grow Today, which must stay a five-second page.
+   nav destinations, each named for its job — **Train** (decide and start; carries a compact
+   read-only heatmap at the bottom as the overview before you commit), **History** (the whole
+   record, filterable by kind, opening into entry detail), **Review** (the dashboard, split
+   into football and gym) — plus `workout`, a focused mode entered from Train that hides the
+   nav. Put a new block on the page whose job it serves; do not grow Train, which must stay a
+   five-second page. Edit and delete belong to an opened entry, never to a row in the list.
 6. **Mobile-first, iOS.** Design for iPhone Safari. No Background Sync (sync on app-open + `online`).
 7. **Add tests for pure logic.** Anything in `engine/` or `sync/merge.ts` should get a vitest test.
 8. **Match surrounding code style.** TypeScript strict, Tailwind utility classes, theme colors in

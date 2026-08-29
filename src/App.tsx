@@ -48,7 +48,7 @@ export default function App() {
   const slot3Next = useMemo(() => nextSlot3(program, log), [program, log]);
   const cType = useMemo(() => nextCType(program, log), [program, log]);
 
-  const [view, setView] = useState<View>('today');
+  const [view, setView] = useState<View>('train');
   const [activeSession, setActiveSession] = useState<SessionId>(rec.nextSession);
   const [video, setVideo] = useState<{ url: string; title: string } | null>(null);
   const [finishOpen, setFinishOpen] = useState(false);
@@ -119,7 +119,7 @@ export default function App() {
         </a>
       )}
 
-      {view === 'today' ? (
+      {view === 'train' ? (
         // The daily job: what to do, and logging what you did. Nothing to read.
         <div className="space-y-4 md:mx-auto md:max-w-2xl">
           <InstallHint />
@@ -132,22 +132,19 @@ export default function App() {
           </button>
           <LastActivity log={log} today={today} />
           <ConsistencyChips log={log} today={today} />
+
+          {/* The overview before you commit — read-only here, so it never competes with
+              the decision above it. Tapping through goes to History. */}
+          <div className="pt-2">
+            <Heatmap log={log} today={today} compact onOpenAll={() => go('history')} />
+          </div>
         </div>
-      ) : view === 'log' ? (
+      ) : view === 'history' ? (
         // What you did: the calendar and the list, which open into entry detail.
-        <div className="space-y-4 md:mx-auto md:max-w-3xl">
-          <Heatmap log={log} today={today} />
-          <HistoryView
-            log={log}
-            onEdit={(entry) => setEditing(entry)}
-            onOpen={(entry) => setViewing(entry)}
-            onDelete={(id) => {
-              deleteEntry(id);
-              void syncNow();
-            }}
-          />
+        <div className="md:mx-auto md:max-w-3xl">
+          <HistoryView log={log} onOpen={(entry) => setViewing(entry)} />
         </div>
-      ) : view === 'progress' ? (
+      ) : view === 'review' ? (
         <ProgressView
           log={log}
           today={today}
@@ -164,7 +161,7 @@ export default function App() {
           slot3Next={slot3Next}
           legAppend={legAppend}
           onPlay={(url, title) => setVideo({ url, title })}
-          onBack={() => go('today')}
+          onBack={() => go('train')}
           onFinish={() => setFinishOpen(true)}
         />
       )}
@@ -182,7 +179,7 @@ export default function App() {
         onSubmit={(e) => {
           addGym(e);
           void syncNow();
-          go('today');
+          go('train');
         }}
       />
 
@@ -205,6 +202,11 @@ export default function App() {
         onEdit={(entry) => {
           setViewing(null);
           setEditing(entry);
+        }}
+        onDelete={(id) => {
+          setViewing(null);
+          deleteEntry(id);
+          void syncNow();
         }}
         onUpdate={(entry) => {
           // Garmin data fetched on open — keep it, so it's ours and never fetched twice.

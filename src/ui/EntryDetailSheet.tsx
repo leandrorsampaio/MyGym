@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { LogEntry } from '../log/types';
 import { isGym, isMatchSport, sportIcon } from '../log/types';
 import { fetchGarminMetrics } from '../garmin/api';
+import { ConfirmDialog } from './ConfirmDialog';
 import { isThinGarmin } from '../garmin/shape';
 import { parseGarminActivityId } from '../garmin/parse';
 import type { Program } from '../program/schema';
@@ -50,6 +51,7 @@ export function EntryDetailSheet(props: {
   program: Program;
   onClose: () => void;
   onEdit: (entry: LogEntry) => void;
+  onDelete: (id: string) => void;
   onUpdate?: (entry: LogEntry) => void;
 }) {
   if (!props.entry) return null;
@@ -99,15 +101,18 @@ function EntryDetail({
   program,
   onClose,
   onEdit,
+  onDelete,
   onUpdate,
 }: {
   entry: LogEntry;
   program: Program;
   onClose: () => void;
   onEdit: (entry: LogEntry) => void;
+  onDelete: (id: string) => void;
   onUpdate?: (entry: LogEntry) => void;
 }) {
   const gym = isGym(entry);
+  const [confirmDelete, setConfirmDelete] = useState(false);
   const { loading, error, retry } = useGarminBackfill(entry, onUpdate);
 
   return (
@@ -187,12 +192,36 @@ function EntryDetail({
           </div>
         )}
 
-        <button
-          onClick={() => onEdit(entry)}
-          className="w-full rounded-xl bg-accent py-3 font-semibold text-bg hover:bg-accentDim active:bg-accentDim"
-        >
-          Edit
-        </button>
+        {/* Edit and delete live here rather than on every row in the list — they act on
+            one entry you have deliberately opened. */}
+        <div className="flex gap-2">
+          <button
+            onClick={() => onEdit(entry)}
+            className="flex-1 rounded-xl bg-accent py-3 font-semibold text-bg hover:bg-accentDim active:bg-accentDim"
+          >
+            Edit
+          </button>
+          <button
+            onClick={() => setConfirmDelete(true)}
+            className="rounded-xl border border-line px-4 py-3 text-slate-400 hover:border-red-400/50 hover:text-red-300"
+            aria-label="Delete entry"
+          >
+            Delete
+          </button>
+        </div>
+
+        <ConfirmDialog
+          open={confirmDelete}
+          title="Delete this entry?"
+          message={`${gym ? `Session ${entry.session}` : entry.sport} on ${longDate(entry.date)}. This can't be undone.`}
+          confirmLabel="Delete"
+          danger
+          onConfirm={() => {
+            setConfirmDelete(false);
+            onDelete(entry.id);
+          }}
+          onCancel={() => setConfirmDelete(false)}
+        />
       </div>
     </Sheet>
   );

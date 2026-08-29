@@ -29,6 +29,7 @@ const render = (entry: MatchEntry | GymEntry | null) =>
       program,
       onClose: () => {},
       onEdit: () => {},
+      onDelete: () => {},
       onUpdate: () => {},
     }),
   );
@@ -81,5 +82,13 @@ describe('a gym session recorded on the watch', () => {
 
   it('shows no Garmin section when the session has no link', () => {
     expect(render(gym)).not.toContain('Garmin');
+  });
+});
+
+describe('destructive actions', () => {
+  it('offers delete on the opened entry, not on every row of the list', () => {
+    const html = render({ ...base, garminUrl: 'https://connect.garmin.com/app/activity/24101714769' });
+    expect(html).toContain('Edit');
+    expect(html).toContain('Delete');
   });
 });
