@@ -231,6 +231,13 @@ code, sync code (verified locally against local D1).
   by the `programSource` merge (built-in follows the bundle). If something looks stale in dev, **hard
   refresh**; the service worker can also serve a stale built app (test UI on `npm run dev` :5173 which
   has no SW).
+- **Service worker caching + Access is a trap.** Navigations are **NetworkFirst**, and
+  `navigateFallback` is explicitly `null` — vite-plugin-pwa injects `index.html` as a default
+  and registers it *before* `runtimeCaching`, which makes any navigation rule dead code. Do not
+  reintroduce it: an app-shell fallback answers every navigation from the precache, so when the
+  Access session lapses (and `/sw.js` is redirected to the login, so the worker can never
+  update) the app freezes on an old build and every deploy looks like it never landed. This
+  cost hours. Offline still works — NetworkFirst falls back to the last cached page.
 - **Service worker caching.** PWA only registers on HTTPS or `localhost`. On the phone over a LAN
   `http://192.168.x.x` URL the SW won't register — real offline/install testing needs the HTTPS deploy.
 - **iOS.** No Background Sync; we sync on app-open + `online`. We call `navigator.storage.persist()`.
