@@ -5,10 +5,11 @@ import {
   loadRamp,
   secondsAtOrAbove,
   weeklyLoad,
+  weeklyVerdict,
   TREND_MIN_POINTS,
 } from './progress';
 import { gym, match } from '../test/factory';
-import type { GarminMetrics } from '../log/types';
+import type { GarminMetrics, LogEntry } from '../log/types';
 
 const garmin = (over: Partial<GarminMetrics> = {}): GarminMetrics => ({
   activityId: 'a1',
@@ -162,5 +163,55 @@ describe('goalTrend', () => {
 describe('TREND_MIN_POINTS', () => {
   it('is high enough that a line is worth drawing', () => {
     expect(TREND_MIN_POINTS).toBeGreaterThanOrEqual(4);
+  });
+});
+
+describe('weeklyVerdict', () => {
+  const g = (load?: number, avgHr?: number): GarminMetrics =>
+    garmin({ ...(load != null ? { exerciseLoad: load } : {}), ...(avgHr != null ? { avgHr } : {}) });
+
+  it('says so plainly when the week is empty', () => {
+    const v = weeklyVerdict([gym('2026-06-01', 'A'), gym('2026-06-03', 'B')], '2026-06-24');
+    expect(v.tone).toBe('light');
+    expect(v.headline).toMatch(/Nothing logged/);
+  });
+
+  it('flags a big jump in load rather than letting it pass', () => {
+    const log = [
+      gym('2026-06-15', 'A', { garmin: g(100) }),
+      gym('2026-06-22', 'B', { garmin: g(220) }),
+      gym('2026-06-23', 'A', { garmin: g(60) }),
+    ];
+    const v = weeklyVerdict(log, '2026-06-24');
+    expect(v.tone).toBe('high');
+    expect(v.headline).toMatch(/up \d+%/);
+  });
+
+  it('admits when nothing carries watch data instead of guessing', () => {
+    const log = [
+      gym('2026-06-15', 'A'), match('2026-06-16', 'football'),
+      gym('2026-06-22', 'B'), match('2026-06-23', 'football'),
+    ];
+    const v = weeklyVerdict(log, '2026-06-24');
+    expect(v.tone).toBe('unknown');
+    expect(v.detail).toMatch(/No watch data/);
+  });
+
+  it('reports a falling heart rate as evidence once there is enough of it', () => {
+    const log: LogEntry[] = [148, 146, 143, 141, 139, 137].map((hr, i) =>
+      match(`2026-0${6 + Math.floor(i / 4)}-${String(2 + (i % 4) * 7).padStart(2, '0')}`, 'football',
+        { garmin: g(180, hr) }));
+    log.push(gym('2026-07-21', 'A', { garmin: g(60) }));
+    const v = weeklyVerdict(log, '2026-07-23');
+    expect(v.detail).toMatch(/come down from 148 to 137/);
+  });
+
+  it('never claims a fitness trend from too few matches', () => {
+    const log = [
+      match('2026-06-15', 'football', { garmin: g(180, 145) }),
+      match('2026-06-22', 'football', { garmin: g(180, 140) }),
+      gym('2026-06-23', 'A', { garmin: g(60) }),
+    ];
+    expect(weeklyVerdict(log, '2026-06-24').detail).toMatch(/too few to read a fitness trend/);
   });
 });

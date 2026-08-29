@@ -57,6 +57,37 @@ export function StackedBars({
   );
 }
 
+/**
+ * One bar per value. A zero is drawn as a hairline rather than nothing, so a blank week
+ * or a goalless match still occupies its place in the sequence.
+ */
+export function Dots({
+  values,
+  fill = '#34d399',
+  label,
+}: {
+  values: number[];
+  fill?: string;
+  label: (v: number, i: number) => string;
+}) {
+  const peak = Math.max(...values, 1);
+  return (
+    <div className="flex h-20 items-end gap-1">
+      {values.map((v, i) => (
+        <div key={i} className="flex flex-1 flex-col justify-end" title={label(v, i)}>
+          <div
+            className="w-full rounded-sm"
+            style={{
+              height: v > 0 ? `${(v / peak) * 100}%` : '2px',
+              backgroundColor: v > 0 ? fill : 'var(--tw-color-line, #26344f)',
+            }}
+          />
+        </div>
+      ))}
+    </div>
+  );
+}
+
 /** A line over evenly-spaced points, optionally with a second (smoothed) line. */
 export function LineChart({
   values,

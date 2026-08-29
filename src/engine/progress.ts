@@ -12,6 +12,7 @@
 import type { GarminMetrics, LogEntry, Sport } from '../log/types';
 import { isGym, isMatchSport } from '../log/types';
 import { addDays, isoWeekKey, mondayOf } from './dates';
+import { consistency } from './stats';
 
 /** Below this many points a trend line is noise, and the UI should say so instead. */
 export const TREND_MIN_POINTS = 5;
@@ -151,4 +152,87 @@ export function goalTrend(log: LogEntry[], window = 5): GoalPoint[] {
       rolling: slice.reduce((a, e) => a + (e as { goals: number }).goals, 0) / slice.length,
     };
   });
+}
+
+/**
+ * A one-sentence read on the week, with its evidence — the thing Review should say before
+ * it shows a single chart.
+ *
+ * Deliberately not a score out of 100. A fabricated number would imply a precision this
+ * data does not have; a plain sentence you can check against the charts underneath is more
+ * honest and more useful. It is also allowed to admit it cannot tell, which matters when
+ * most activities carry no watch data.
+ */
+export type VerdictTone = 'on-track' | 'high' | 'light' | 'unknown';
+
+export interface Verdict {
+  tone: VerdictTone;
+  /** The claim. One line. */
+  headline: string;
+  /** Why it says that, in terms you can go and verify below. */
+  detail: string;
+}
+
+/** Ramp above this reads as a real jump rather than ordinary week-to-week noise. */
+const HIGH_RAMP = 0.5;
+/** Below this share of your usual weekly count, the week is genuinely lighter. */
+const LIGHT_SHARE = 0.6;
+
+export function weeklyVerdict(log: LogEntry[], today: string): Verdict {
+  const c = consistency(log, today);
+  const weeks = weeklyLoad(log, today, 12);
+  const ramp = loadRamp(weeks);
+  const linked = weeks.reduce((a, w) => a + w.linked, 0);
+
+  const hrs = activityPoints(log)
+    .filter((p) => p.kind === 'match' && p.avgHr != null)
+    .map((p) => p.avgHr!);
+
+  // Evidence sentence, chosen by what the data can actually support.
+  const detail =
+    hrs.length >= TREND_MIN_POINTS
+      ? hrs[hrs.length - 1]! < hrs[0]!
+        ? `Match heart rate has come down from ${hrs[0]} to ${hrs[hrs.length - 1]} bpm across ${hrs.length} recorded games.`
+        : `Match heart rate is steady around ${Math.round(hrs.reduce((a, b) => a + b, 0) / hrs.length)} bpm across ${hrs.length} recorded games.`
+      : linked === 0
+        ? 'No activity has watch data yet, so nothing here can speak to fitness.'
+        : `Only ${hrs.length} match${hrs.length === 1 ? '' : 'es'} carry heart-rate data — too few to read a fitness trend.`;
+
+  if (c.thisWeek === 0) {
+    return {
+      tone: 'light',
+      headline: 'Nothing logged this week yet.',
+      detail: `You normally average ${c.avgPerWeek.toFixed(1)} activities a week.`,
+    };
+  }
+
+  if (ramp != null && ramp > HIGH_RAMP) {
+    return {
+      tone: 'high',
+      headline: `Load is up ${Math.round(ramp * 100)}% on last week.`,
+      detail: `${c.thisWeek} activities. A jump this size is where legs get dug into a hole — worth an easier week next. ${detail}`,
+    };
+  }
+
+  if (c.avgPerWeek > 0 && c.thisWeek < c.avgPerWeek * LIGHT_SHARE) {
+    return {
+      tone: 'light',
+      headline: `A lighter week — ${c.thisWeek} of your usual ${c.avgPerWeek.toFixed(1)}.`,
+      detail: `Not a problem on its own. ${detail}`,
+    };
+  }
+
+  if (linked === 0) {
+    return {
+      tone: 'unknown',
+      headline: `${c.thisWeek} activities this week.`,
+      detail: 'No watch data linked yet, so there is nothing to say about load or fitness.',
+    };
+  }
+
+  return {
+    tone: 'on-track',
+    headline: `${c.thisWeek} activities, load close to your recent average.`,
+    detail,
+  };
 }

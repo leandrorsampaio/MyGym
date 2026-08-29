@@ -76,7 +76,7 @@ src/
     rotation.ts             nextCType / nextSlot3, derived from the log
     stats.ts                gymStats / footballStats / consistency
     insights.ts             lastActivity / buildHeatmap / highlights (homepage extras)
-    progress.ts             weeklyLoad / activityPoints / goalTrend — the Progress dashboard
+    progress.ts             weeklyLoad / activityPoints / goalTrend / weeklyVerdict — Review
   store/useStore.ts       Zustand store (program + log + sync outbox), IndexedDB persistence
   store/idbStorage.ts     IndexedDB adapter for Zustand persist
   sync/                   Cloud backup sync (write-behind, last-write-wins)
@@ -259,7 +259,8 @@ code, sync code (verified locally against local D1).
   page whose job it serves (see invariant 5). A dashboard panel goes in `ui/ProgressView.tsx`
   wrapped in `Panel`, whose body is a **function** so a panel with too little data never builds
   the chart it cannot draw — and must say what is missing rather than draw a line through
-  three points.
+  three points. Review is split: football answers *am I performing?*, gym answers *am I
+  consistent?*, and only weekly load spans both, so only it sits above the split.
 - **Change a coaching rule:** edit `engine/recommend.ts` and update/extend `recommend.test.ts`.
 - **Add a new view (e.g. settings page):** add a value to the `View` union in `App.tsx` and render it
   conditionally — do not add a router.

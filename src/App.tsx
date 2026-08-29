@@ -11,7 +11,7 @@ import { Hero } from './ui/Hero';
 import { ConsistencyChips } from './ui/Stats';
 import { LastActivity } from './ui/LastActivity';
 import { Heatmap } from './ui/Heatmap';
-import { ProgressView } from './ui/ProgressView';
+import { ReviewView } from './ui/ReviewView';
 import { HistoryView } from './ui/HistoryView';
 import { WorkoutView } from './ui/WorkoutView';
 import { VideoModal } from './ui/VideoModal';
@@ -145,7 +145,7 @@ export default function App() {
           <HistoryView log={log} onOpen={(entry) => setViewing(entry)} />
         </div>
       ) : view === 'review' ? (
-        <ProgressView
+        <ReviewView
           log={log}
           today={today}
           onEntry={(entry) => {
