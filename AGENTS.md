@@ -22,6 +22,7 @@ stats. It's an **offline-first installable PWA** that deploys to **Cloudflare**.
 | `ARCHITECTURE.md` | Technical design & rationale | Understanding *how* it's built |
 | `DEPLOY.md` | Step-by-step Cloudflare deploy checklist | Deploying / infra |
 | `trainning.md` | The owner's real training program (source for `program.json`) | Editing the program data |
+| `UX-BRIEF.md` | Brief for a designer to rethink the interface (not yet acted on) | Redesign work |
 | `src/data/program.json` | The live program data (JSON-driven) | Changing exercises/videos/thumbnails |
 
 ---
